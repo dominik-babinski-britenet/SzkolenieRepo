@@ -1,30 +1,50 @@
-.DS_Store                # Cruft from MacOS Finder
-Thumbs.db                # Cruft from Windows Explorer
+# This file is used for Git repositories to specify intentionally untracked files that Git should ignore. 
+# If you are not using git, you can delete this file. For more information see: https://git-scm.com/docs/gitignore
+# For useful gitignore templates see: https://github.com/github/gitignore
 
-.project                 # I think this is Eclipse but not certain
-.settings                # Ditto
-salesforce.schema        # Eclipse
-Referenced Packages      # Eclipse
+# Salesforce cache
+.sf/
+.sfdx/
+.localdevserver/
+deploy-options.json
 
-build.properties         # Force.com Migration Tool
+# LWC VSCode autocomplete
+**/lwc/jsconfig.json
 
-/IlluminatedCloud/        # Illuminated Cloud
-/.idea/                   # IntelliJ IDEA (Illuminated Cloud)
+# LWC Jest coverage reports
+coverage/
 
-venv/                    # Python
-*.pyc                    # Python
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-.*.swp                   # Vim
+# Dependency directories
+node_modules/
 
-*.sublime-project        # Sublime Text (used with MavensMate)
-*.sublime-workspace      # Sublime Text (used with MavensMate)
+# Eslint cache
+.eslintcache
 
-.sfdx/                   # SFDX
+# MacOS system files
+.DS_Store
 
-.vscode/                 # Visual Studio Code
+# Windows system files
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
 
-.cci/                    # CumulusCI
+# Local environment variables
+.env
 
-node_modules/            # Node.js (LWC, Prettier)
-coverage/                # LWC coverage information
-.localdevserver/         # SFDX/LWC dev
+# Python Salesforce Functions
+**/__pycache__/
+**/.venv/
+**/venv/
+
+
+/.idea/
+/IlluminatedCloud/
+.cci/
