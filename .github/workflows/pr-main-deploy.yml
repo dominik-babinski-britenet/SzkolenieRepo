@@ -14,11 +14,9 @@ on:
 # Jobs to be executed
 jobs:
     deploy-branch-to-production-org:
-        if: github.event.pull_request.merged == true
+        if: github.event.pull_request.merged == true && github.actor != 'dependabot[bot]'
         runs-on: ubuntu-latest
-        if: ${{ github.actor != 'dependabot[bot]' }}
         steps:
-
             - name: 'Install Salesforce CLI'
               run: |
                   npm install @salesforce/cli --global
