@@ -46,4 +46,5 @@ trigger CreateOrderOnOpportunityClose on Opportunity (after update) {
     }
 
     insert ordersToInsert;
+    //
 }
