@@ -45,19 +45,5 @@ trigger CreateOrderOnOpportunityClose on Opportunity (after update) {
         }
     }
 
-    //CustomNotificationType notificationType =
-    //[SELECT Id, DeveloperName
-    //FROM CustomNotificationType
-    //WHERE DeveloperName='new_order_was_created'];
-//
-    //Messaging.CustomNotification notification = new Messaging.CustomNotification();
-    //notification.setTitle('Apex Custom Notification');
-    //notification.setBody('The notifications are coming from INSIDE the Apex!');
-//
-    //notification.setNotificationTypeId(notificationType.Id);
-    //notification.setTargetId(Trigger.new[0].Id);
-//
-    //notification.send(new Set<String>{Trigger.new[0].LastModifiedById});
-
     insert ordersToInsert;
 }
