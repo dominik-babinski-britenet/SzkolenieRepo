@@ -1,0 +1,242 @@
+<apex:page showHeader="false">
+    <style>
+        body {
+            background-image: url('{!$Resource.Background}');
+            background-size: 105%;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: Arial, sans-serif;
+            color: #283618;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            height: 100%;
+            animation: zoomOut 2s ease-in-out forwards;
+        }
+
+        @keyframes zoomOut {
+            0% {
+                background-size: 105%;
+            }
+            100% {
+                background-size: 100%;
+            }
+        }
+
+        .navbar {
+            overflow: hidden;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar img {
+            width: 50px;
+            height: auto;
+        }
+
+        .navbar .navbar-brand {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFF;
+            text-decoration: none;
+        }
+
+        .footer {
+            color: #FFF;
+            text-align: center;
+            padding: 10px 0;
+            width: 100%;
+            position: absolute; bottom: 0; left: 0; right: 0;
+        }
+
+        form {
+            animation: slide-in 1s forwards;
+            animation-timing-function: ease-in-out;
+        }
+
+        @keyframes slide-in {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        form label {
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            margin-bottom: 8px;
+            display: inline-block;
+            width: 150px;
+        }
+
+        form input[type="text"],
+        form select {
+            width: calc(100% - 160px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        form input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #dda15e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        form input[type="submit"]:hover {
+            background-color: #b57c3c;
+        }
+
+        form br {
+            clear: both;
+        }
+
+        .required-asterisk {
+            color: #ff6969;
+            margin-left: 2px;
+            font-weight: bold;
+        }
+
+        .thank-you-message {
+            font-size: 24px;
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            width: 50%;
+            float: left;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('contactForm').addEventListener('submit',async function(event) {
+                event.preventDefault();
+
+                const form = event.target;
+                const body = new URLSearchParams();
+
+                for (const [key, value] of new FormData(form)) {
+                    body.append(key, value);
+                }
+
+                document.getElementById("submit-button").style.display = "none";
+                document.getElementById("spinner").style.display = "block";
+
+                try
+                {
+                    await fetch('https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DWU000007NlQT', {
+                        method: 'POST',
+                        body,
+                        mode: 'no-cors',
+                    });
+                }
+                catch(error)
+                {
+                    console.error('Submission failed', error);
+                }
+                finally
+                {
+                    document.getElementById("contactForm").style.display = "none";
+                    document.getElementById("thankYouMessage").style.display = "block";
+                }
+            });
+        });
+    </script>
+
+    <div style="display: flex; flex-direction:column; height: 100vh;">
+        <div class="navbar">
+            <a href="#" class="navbar-brand">GoodBook</a>
+        </div>
+
+        <div style="flex-grow: 1; display: flex; flex-direction:column; justify-content:center;">
+
+            <form style="width: 35%; margin-left: 3em; background: rgba(0, 0, 0, 0.25); padding: 1em; border-radius: 1em"
+                  id="contactForm"
+                  action="javascript:;"
+                  method="POST" onsubmit="">
+                <p style="text-align: center; color: white; font-size: 32px; font-weight: bold;">Work with us!</p><br/>
+                <input type="hidden" name="oid" value="00DWU000007NlQT"/>
+                <input type="hidden" name="retURL" value="https://example.org"/>
+
+                <label for="first_name">First Name<span class="required-asterisk">*</span></label>
+                <input id="first_name" maxlength="40" name="first_name" size="20" type="text" required="required"/><br/>
+
+                <label for="last_name">Last Name<span class="required-asterisk">*</span></label>
+                <input id="last_name" maxlength="80" name="last_name" size="20" type="text" required="required"/><br/>
+
+                <label for="company">Company<span class="required-asterisk">*</span></label>
+                <input id="company" maxlength="40" name="company" size="20" type="text" required="required"/><br/>
+
+                <label for="email">Email<span class="required-asterisk">*</span></label>
+                <input id="email" maxlength="80" name="email" size="20" type="text" required="required"/><br/>
+
+                <label for="phone">Phone</label>
+                <input id="phone" maxlength="40" name="phone" size="20" type="text"/><br/>
+
+                <label for="country">Country<span class="required-asterisk">*</span></label>
+                <input id="country" maxlength="40" name="country" size="20" type="text" required="required"/><br/>
+
+                <label for="00NWU000002xpa1">Shop Type</label>
+                <select id="00NWU000002xpa1" name="00NWU000002xpa1" title="Shop Type">
+                    <option value="Bookstore">Bookstore</option>
+                    <option value="Supermarket">Supermarket</option>
+                    <option value="News Agent">News Agent</option>
+                    <option value="Post Office">Post Office</option>
+                    <option value="Online Bookstore">Online Bookstore</option>
+                    <option value="Other">Other</option>
+                </select><br/>
+
+                <input id="lead_source" name="lead_source" type="hidden" value="Web"/>
+
+                <label for="00NWU000002xoxK">Annual Books Sold</label>
+                <input id="00NWU000002xoxK" name="00NWU000002xoxK" size="20" type="text"/><br/>
+
+                <input id="submit-button" type="submit" name="submit"/>
+                <div style="display: flex; justify-content: center; align-items: center;">
+                    <div id="spinner" class="loader" style="display:none;"/>
+                </div>
+            </form>
+            <div id="thankYouMessage" class="thank-you-message" style="display:none;">
+                Thank you for contacting us. <br/> Check your email for further information.
+            </div>
+        </div>
+
+
+    </div>
+    <footer>
+        <p class="footer">All Rights Reserved &copy; GoodBook 2024</p>
+    </footer>
+</apex:page>

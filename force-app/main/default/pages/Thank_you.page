@@ -1,0 +1,4 @@
+<apex:page >
+  <h1>Thank you for contact!</h1><br/>
+  <a href="https://britenet95-dev-ed.develop.my.salesforce-sites.com/contact">Return to contact form.</a>
+</apex:page>

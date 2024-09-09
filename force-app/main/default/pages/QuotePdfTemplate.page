@@ -1,0 +1,133 @@
+<apex:page renderAs="pdf" showHeader="false" standardController="Quote">
+    <html lang="en">
+        <head>
+            <style type="text/css">
+                body, table, td, a {
+                    font-family: Arial, sans-serif;
+                    font-size: 14px;
+                    line-height: 1.6;
+                    color: #333;
+                    margin: 0;
+                    padding: 0;
+                    text-align: left;
+                }
+                body {
+                    background-color: #f9f9f9;
+                }
+                img {
+                    border: 0;
+                    outline: none;
+                    text-decoration: none;
+                    display: block;
+                }
+                table {
+                    border-collapse: collapse !important;
+                    width: 100%;
+                }
+                a {
+                    color: #4285f4;
+                    text-decoration: none;
+                }
+                .email-container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background-color: #ffffff;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                }
+                .email-header {
+                    background: url('https://britenet95-dev-ed.develop.file.force.com/sfc/dist/version/download/?oid=00DWU000007NlQT&amp;ids=068WU000003Tyv7&amp;d=%2Fa%2FWU0000001ccj%2FMn5NjgZcP3EDKftsbmBWcjufJ0iD0DhP.mgHnvLB6PQ&amp;asPdf=false') no-repeat center center;
+                    background-size: cover;
+                    padding: 20px;
+                    text-align: left;
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #ffffff;
+                    border-bottom: 1px solid #ddd;
+                }
+                .email-body {
+                    padding: 20px;
+                }
+                .email-body h1 {
+                    font-size: 22px;
+                    color: #333;
+                    margin: 0 0 15px;
+                }
+                .email-body p {
+                    margin: 0 0 15px;
+                }
+                .email-body a.button {
+                    display: inline-block;
+                    padding: 10px 20px;
+                    margin-top: 10px;
+                    background-color: #dda15e;
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 4px;
+                }
+                .email-footer {
+                    background-color: #f9f9f9;
+                    padding: 10px 20px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #777;
+                    border-top: 1px solid #ddd;
+                }
+                .email-footer p {
+                    margin: 0;
+                }
+                @media only screen and (max-width: 600px) {
+                    .email-container {
+                        width: 100% !important;
+                    }
+                    .email-header,
+                    .email-body,
+                    .email-footer {
+                        padding-left: 10px;
+                        padding-right: 10px;
+                    }
+                    .email-body h1 {
+                        font-size: 20px;
+                    }
+                }
+            </style>
+        </head>
+        <body style="height: auto; min-height: auto;">
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tbody>
+                    <tr>
+                        <td align="center">
+                            <table border="0" cellpadding="0" cellspacing="0" class="email-container">
+                                <tbody>
+                                    <tr>
+                                        <td class="email-header">Quote Offer</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="email-body">
+                                            <h1>Dear {!Quote.Contact.Name},</h1>
+                                            <p>Thank you for considering our offer. Below are the details of your quote:</p>
+                                            <p><strong>Quote Number:</strong> {!Quote.QuoteNumber}</p>
+                                            <p><strong>Account Name:</strong> {!Quote.Account.Name}</p>
+                                            <p><strong>Quote Total:</strong> {!TEXT(Quote.TotalPrice)}</p>
+                                            <p>We are confident that this quote meets your requirements, and we are happy to address any questions or modifications you may need.</p>
+                                            <p>Thank you for choosing us!</p>
+                                            <a class="button" href="https://yourcompanywebsite.com" rel="noopener noreferrer">Visit our Website</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="email-footer">
+                                            <p>123 Main Street, Your City, Your Country | <a href="mailto:support@yourcompany.com">support@yourcompany.com</a> | <a href="tel:+1234567890">+1 234 567 890</a></p>
+                                            <p>&copy; 2024 Your Company. All rights reserved.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </body>
+    </html>
+</apex:page>
