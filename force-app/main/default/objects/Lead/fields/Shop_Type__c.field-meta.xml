@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Shop_Type__c</fullName>
+    <label>Shop Type</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Bookstore</fullName>
+                <default>false</default>
+                <label>Bookstore</label>
+            </value>
+            <value>
+                <fullName>Supermarket</fullName>
+                <default>false</default>
+                <label>Supermarket</label>
+            </value>
+            <value>
+                <fullName>News Agent</fullName>
+                <default>false</default>
+                <label>News Agent</label>
+            </value>
+            <value>
+                <fullName>Post Office</fullName>
+                <default>false</default>
+                <label>Post Office</label>
+            </value>
+            <value>
+                <fullName>Online Bookstore</fullName>
+                <default>false</default>
+                <label>Online Bookstore</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

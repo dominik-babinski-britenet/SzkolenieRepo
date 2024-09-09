@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Prevent_Stage_Change_If_No_Products</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+				NOT($Setup.Skip_Admin_Opportunity_Validation__c.Allow_Bypass__c),
+    AND(				 
+       ISCHANGED(StageName),
+        AND(
+		    		    ISPICKVAL(StageName, &quot;Value Proposition&quot;),
+            NOT(HasOpportunityLineItem)         					 
+        )
+				)
+)</errorConditionFormula>
+    <errorMessage>Opportunity has no products.</errorMessage>
+</ValidationRule>
