@@ -11,7 +11,8 @@ export default class DiscountDataView extends LightningElement {
       fieldName: 'link',
       initialWidth: 200,
       typeAttributes: {
-        label: { fieldName: 'Name' }
+        label: { fieldName: 'Name' },
+        target: '_blank'
       }
     },
     {
@@ -24,11 +25,6 @@ export default class DiscountDataView extends LightningElement {
       fieldName: 'Discount_Requirement__c',
       initialWidth: 700
     },
-    //{
-    //  label: 'Requirement Value',
-    //  fieldName: 'Discount_Requirement_Value__c',
-    //  initialWidth: 200
-    //},
     {
       label: 'Active',
       fieldName: 'IsActive__c',
