@@ -14,13 +14,13 @@ export default class DiscountDataView extends LightningElement {
     {
       label: 'Requirement',
       fieldName: 'Discount_Requirement__c',
-      initialWidth: 500
+      initialWidth: 700
     },
-    {
-      label: 'Requirement Value',
-      fieldName: 'Discount_Requirement_Value__c',
-      initialWidth: 200
-    },
+    //{
+    //  label: 'Requirement Value',
+    //  fieldName: 'Discount_Requirement_Value__c',
+    //  initialWidth: 200
+    //},
     {
       label: 'Active',
       fieldName: 'IsActive__c',
@@ -84,6 +84,13 @@ export default class DiscountDataView extends LightningElement {
         return {
           ...discount,
           _children: accountChildren,
+          Discount_Requirement__c: String(
+            discount.Discount_Requirement__c
+          ).replace(
+            '<Requirement_Value>',
+            discount.Discount_Requirement_Value__c
+          ),
+          DiscountValue__c: discount.DiscountValue__c.toFixed(2) + '%',
           isChild: false
         };
       });
