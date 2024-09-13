@@ -31,6 +31,7 @@ public class DiscountTriggerHandler extends TriggerHandler {
 
     private void addDiscounts(List<Discount__c> discountsToAdd) {
         List<AccountDiscount__c> discountsToInsert = new List<AccountDiscount__c>();
+        List<Account> allAccounts = new List<Account>();
 
         for (Discount__c discount : discountsToAdd) {
             if (!discount.IsActive__c) {
@@ -40,11 +41,7 @@ public class DiscountTriggerHandler extends TriggerHandler {
             DiscountRequirements requirementFunctionToUse = (DiscountRequirements) Type.forName(discount.Discount_Requirement__c)
                 .newInstance();
 
-            //TODO: Move outside loop
-            for (Account acc : [
-                SELECT Id, Orders_Placed__c, BooksSold__c, Total_Money_Spent__c
-                FROM Account
-            ]) {
+            for (Account acc : allAccounts) {
                 if (requirementFunctionToUse.isEligibleForDiscount(acc, (Double) discount.Discount_Requirement_Value__c)) {
                     discountsToInsert.add(new AccountDiscount__c(Account__c = acc.Id, Discount__c = discount.Id));
                 }

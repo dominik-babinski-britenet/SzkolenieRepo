@@ -5,7 +5,15 @@ import { refreshApex } from '@salesforce/apex';
 export default class DiscountDataView extends LightningElement {
   @track gridData;
   @track gridColumns = [
-    { label: 'Name', fieldName: 'Name', initialWidth: 200 },
+    {
+      type: 'url',
+      label: 'Name',
+      fieldName: 'link',
+      initialWidth: 200,
+      typeAttributes: {
+        label: { fieldName: 'Name' }
+      }
+    },
     {
       label: 'Discount Value',
       fieldName: 'DiscountValue__c',
@@ -76,6 +84,7 @@ export default class DiscountDataView extends LightningElement {
           ? discount.AccountDiscounts__r.map((account) => ({
               Id: account.Account__r.Id,
               Name: account.Account__r.Name,
+              link: `/${account.Account__c}`,
               isChild: true,
               editButtonClass: 'slds-hide',
               deleteButtonClass: 'slds-hide'
@@ -90,6 +99,8 @@ export default class DiscountDataView extends LightningElement {
             '<Requirement_Value>',
             discount.Discount_Requirement_Value__c
           ),
+          Name: discount.Name,
+          link: `/${discount.Id}`,
           DiscountValue__c: discount.DiscountValue__c.toFixed(2) + '%',
           isChild: false
         };
