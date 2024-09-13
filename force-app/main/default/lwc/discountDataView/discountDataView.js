@@ -61,8 +61,8 @@ export default class DiscountDataView extends LightningElement {
     }
   ];
 
-  @track isModalOpen = false;
-  @track isEditModalOpen = false;
+  isModalOpen = false;
+  isEditModalOpen = false;
   selectedRecordId;
   selectedRecordName;
 
