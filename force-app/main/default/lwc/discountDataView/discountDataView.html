@@ -1,11 +1,28 @@
 <template>
-  <div class="slds-m-top_medium slds-m-bottom_x-large">
-    <div class="slds-p-around_medium lgc-bg">
-      <lightning-tree-grid
-        columns={gridColumns}
-        data={gridData}
-        key-field="id"
-      ></lightning-tree-grid>
-    </div>
-  </div>
+  <lightning-card title="Discount Data View">
+    <lightning-tree-grid
+      columns={gridColumns}
+      data={gridData}
+      hide-checkbox-column="true"
+      key-field="Id"
+      onrowaction={handleRowAction}
+    ></lightning-tree-grid>
+
+    <template if:true={isModalOpen}>
+      <c-confirm-delete-modal
+        record-id={selectedRecordId}
+        record-name={selectedRecordName}
+        onclose={handleModalClose}
+        ondelete={handleDeleteConfirmed}
+      ></c-confirm-delete-modal>
+    </template>
+
+    <template if:true={isEditModalOpen}>
+      <c-edit-discount-modal
+        record-id={selectedRecordId}
+        onedit={handleEdit}
+        onclose={handleModalClose}
+      ></c-edit-discount-modal>
+    </template>
+  </lightning-card>
 </template>
