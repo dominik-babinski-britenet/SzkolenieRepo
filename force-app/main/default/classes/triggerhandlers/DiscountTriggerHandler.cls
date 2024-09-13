@@ -31,7 +31,10 @@ public class DiscountTriggerHandler extends TriggerHandler {
 
     private void addDiscounts(List<Discount__c> discountsToAdd) {
         List<AccountDiscount__c> discountsToInsert = new List<AccountDiscount__c>();
-        List<Account> allAccounts = new List<Account>();
+        List<Account> allAccounts = [
+            SELECT Id, Orders_Placed__c, BooksSold__c, Total_Money_Spent__c
+            FROM Account
+        ];
 
         for (Discount__c discount : discountsToAdd) {
             if (!discount.IsActive__c) {
