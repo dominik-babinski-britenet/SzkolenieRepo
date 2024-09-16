@@ -67,6 +67,7 @@ export default class DiscountDataView extends LightningElement {
 
   isModalOpen = false;
   isEditModalOpen = false;
+  isCreateModalOpen = false;
   selectedRecordId;
   selectedRecordName;
 
@@ -121,9 +122,19 @@ export default class DiscountDataView extends LightningElement {
     }
   }
 
+  handleCreateButtonClick() {
+    this.isCreateModalOpen = true;
+  }
+
   handleModalClose() {
     this.isModalOpen = false;
     this.isEditModalOpen = false;
+    this.isCreateModalOpen = false;
+  }
+
+  handleCreate() {
+    refreshApex(this.wiredDiscountsResult);
+    this.isCreateModalOpen = false;
   }
 
   handleEdit() {

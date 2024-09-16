@@ -1,4 +1,8 @@
 <template>
+  <lightning-button
+    label="Create New"
+    onclick={handleCreateButtonClick}
+  ></lightning-button>
   <lightning-card title="Current Discounts">
     <lightning-tree-grid
       columns={gridColumns}
@@ -23,6 +27,13 @@
         onedit={handleEdit}
         onclose={handleModalClose}
       ></c-edit-discount-modal>
+    </template>
+
+    <template if:true={isCreateModalOpen}>
+      <c-create-discount-modal
+        oncreate={handleCreate}
+        onclose={handleModalClose}
+      ></c-create-discount-modal>
     </template>
   </lightning-card>
 </template>
