@@ -1,8 +1,16 @@
 public class OrderItemTriggerHandler extends TriggerHandler {
     public override void afterUpdate() {
+        updateAccountInfo();
+    }
+
+    public override void afterInsert() {
+        updateAccountInfo();
+    }
+
+    public void updateAccountInfo() {
         Set<Id> accountIds = new Set<Id>();
 
-        for (OrderItem item : (List<OrderItem>)Trigger.new) {
+        for (OrderItem item : (List<OrderItem>) Trigger.new) {
             if (item.Order.AccountId != null) {
                 accountIds.add(item.Order.AccountId);
             }
