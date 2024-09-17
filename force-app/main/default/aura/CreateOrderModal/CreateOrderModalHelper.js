@@ -3,9 +3,7 @@
     let action = component.get('c.getProductPrices');
     action.setStorable();
     action.setCallback(this, function (response) {
-      console.log(response.state);
       let state = response.getState();
-      console.log('Hello');
       if (state === 'SUCCESS') {
         component.set(
           'v.totalPages',
@@ -25,41 +23,54 @@
         });
 
         component.set('v.allData', allData);
+        component.set('v.filteredData', allData);
         component.set('v.currentPageNumber', 1);
-        console.log(
-          `component.get('v.allData'): ${JSON.stringify(component.get('v.allData'))}`
-        );
         helper.buildData(component, helper);
       }
     });
     $A.enqueueAction(action);
   },
-  /*
-   * this function will build table data
-   * based on current page selection
-   * */
+
+  recalculateFilter: function (component, helper) {
+    let filteredData = helper.getFilteredData(component);
+
+    component.set(
+      'v.totalPages',
+      Math.max(1, Math.ceil(filteredData.length / component.get('v.pageSize')))
+    );
+    component.set('v.currentPageNumber', 1);
+    component.set('v.filteredData', filteredData);
+    helper.buildData(component, helper);
+  },
+
+  getFilteredData: function (component) {
+    let allData = component.get('v.allData');
+    let filter = component.get('v.filter');
+    if (!filter) {
+      return allData;
+    }
+    let filteredData = allData.filter(function (item) {
+      return item.ProductName.toLowerCase().includes(filter.toLowerCase());
+    });
+    return filteredData;
+  },
+
   buildData: function (component, helper) {
     var data = [];
     var pageNumber = component.get('v.currentPageNumber');
     var pageSize = component.get('v.pageSize');
-    var allData = component.get('v.allData');
+    var allData = component.get('v.filteredData');
     var x = (pageNumber - 1) * pageSize;
 
-    //creating data-table data
     for (; x < pageNumber * pageSize; x++) {
       if (allData[x]) {
         data.push(allData[x]);
       }
     }
     component.set('v.data', data);
-    console.log(`data: ${JSON.stringify(data)}`);
-
     helper.generatePageList(component, pageNumber);
   },
 
-  /*
-   * this function generate page list
-   * */
   generatePageList: function (component, pageNumber) {
     pageNumber = parseInt(pageNumber);
     var pageList = [];

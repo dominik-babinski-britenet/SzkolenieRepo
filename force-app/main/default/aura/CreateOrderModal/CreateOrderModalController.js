@@ -14,13 +14,28 @@
     helper.loadData(component, helper);
   },
 
-  filter: function (component, event, helper) {
-    let allData = component.get('v.allData');
-    let filter = component.get('v.filter');
-    let filteredData = allData.filter(function (item) {
-      return item.ProductName.toLowerCase().includes(filter.toLowerCase());
+  handleRowSelection: function (component, event) {
+    var selectedRows = event.getParam('selectedRows');
+    var allSelectedRows = component.get('v.selection') || [];
+
+    // Merge newly selected rows with existing ones
+    selectedRows.forEach(function (row) {
+      if (!allSelectedRows.some((existingRow) => existingRow.Id === row.Id)) {
+        allSelectedRows.push(row);
+      }
     });
-    component.set('v.data', filteredData);
+
+    // Remove rows that are no longer selected in the visible table
+    var data = component.get('v.data');
+    var filteredSelectedRows = allSelectedRows.filter(function (row) {
+      return data.some((dataRow) => dataRow.Id === row.Id);
+    });
+
+    component.set('v.selection', filteredSelectedRows);
+  },
+
+  filter: function (component, event, helper) {
+    helper.recalculateFilter(component, helper);
   },
 
   onNext: function (component, event, helper) {
