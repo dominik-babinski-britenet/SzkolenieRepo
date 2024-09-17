@@ -5,6 +5,7 @@
     action.setCallback(this, function (response) {
       console.log(response.state);
       let state = response.getState();
+      console.log('Hello');
       if (state === 'SUCCESS') {
         component.set(
           'v.totalPages',
@@ -13,7 +14,17 @@
           )
         );
 
-        component.set('v.allData', response.getReturnValue());
+        let allData = response.getReturnValue().map((item) => {
+          return {
+            Id: item.Id,
+            ProductName: item.Product2.Name,
+            ProductCode: item.Product2.ProductCode,
+            Description: item.Product2.Description,
+            UnitPrice: item.UnitPrice
+          };
+        });
+
+        component.set('v.allData', allData);
         component.set('v.currentPageNumber', 1);
         console.log(
           `component.get('v.allData'): ${JSON.stringify(component.get('v.allData'))}`
@@ -35,7 +46,7 @@
     var x = (pageNumber - 1) * pageSize;
 
     //creating data-table data
-    for (; x <= pageNumber * pageSize; x++) {
+    for (; x < pageNumber * pageSize; x++) {
       if (allData[x]) {
         data.push(allData[x]);
       }

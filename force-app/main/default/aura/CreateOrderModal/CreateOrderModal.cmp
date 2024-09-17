@@ -3,19 +3,15 @@
   controller="CreateOrderController"
 >
   <aura:attribute name="data" type="Object" />
-  <aura:attribute name="allData" type="Object" />
   <aura:attribute name="columns" type="List" />
-
-  <aura:attribute name="pageNumber" type="Integer" default="1" />
-  <aura:attribute name="pageSize" type="Integer" default="10" />
-  <aura:attribute name="isLastPage" type="Boolean" default="false" />
-  <aura:attribute name="resultSize" type="Integer" default="0" />
-  <!-- attribute to hold selected all rows -->
+  <aura:attribute name="recordId" type="String" />
+  <aura:attribute name="allData" type="List" />
+  <aura:attribute name="currentPageNumber" type="Integer" default="1" />
+  <aura:attribute name="pageSize" type="Integer" default="5" />
+  <aura:attribute name="totalPages" type="Integer" default="0" />
+  <aura:attribute name="pageList" type="List" />
+  <aura:attribute name="filter" type="String" />
   <aura:attribute name="selection" type="List" />
-  <!-- attribute to check if the page has changed or not -->
-  <aura:attribute name="hasPageChanged" type="Boolean" />
-  <!-- attribute to check if it is initialLoad -->
-  <aura:attribute name="initialLoad" type="Boolean" default="true" />
 
   <aura:handler name="init" value="{! this }" action="{! c.init }" />
 
@@ -23,7 +19,9 @@
     <lightning:input
       name="filter"
       label="Filter by Product Name"
-      onchange="{! c.handleFilterChange }"
+      onchange="{! c.filter }"
+      placeholder="Filter keywords..."
+      value="{! v.filter}"
     />
   </div>
 
@@ -37,29 +35,72 @@
           keyField="Id"
           hideCheckboxColumn="false"
           selectedRows="{!v.selection}"
-          onrowaction="{! c.handleRowAction }"
-          onrowselection="{!c.onRowSelection}"
         />
       </lightning:layoutItem>
-      <lightning:layoutItem padding="around-small" flexibility="auto">
+      <lightning:layoutItem>
+        <lightning:layoutItem
+          padding="around-small"
+          flexibility="auto"
+        ></lightning:layoutItem>
         <lightning:button
-          label="Prev"
+          label="First"
+          iconName="utility:left"
+          iconPosition="left"
+          onclick="{!c.onFirst}"
+          disabled="{! v.currentPageNumber == 1}"
+        />
+        <lightning:button
           iconName="utility:chevronleft"
           iconPosition="left"
           onclick="{!c.onPrev}"
-          disabled="{! v.pageNumber == 1}"
+          disabled="{! v.currentPageNumber == 1}"
         />
-        <span class="slds-p-horizontal_small">
-          Page {!v.pageNumber} | Showing records from {!
-          ((v.pageNumber-1)*v.pageSize)+' to
-          '+((v.pageNumber-1)*v.pageSize+v.resultSize)}
+        <span class="slds-p-horizontal_x-small">
+          <a
+            onclick="{!c.processMe}"
+            name="1"
+            class="{! (v.currentPageNumber == 1) ? 'selected' : ''}"
+            >1</a
+          >
+        </span>
+        <span class="slds-p-horizontal_xxx-small">
+          <a>...</a>
+        </span>
+
+        <aura:iteration items="{!v.pageList}" var="item">
+          <span class="slds-p-horizontal_x-small">
+            <a
+              onclick="{!c.processMe}"
+              name="{!item}"
+              class="{! (v.currentPageNumber == item) ? 'selected' : ''}"
+              >{!item}</a
+            >
+          </span>
+        </aura:iteration>
+
+        <span class="slds-p-horizontal_xxx-small">
+          <a>...</a>
+        </span>
+        <span class="slds-p-horizontal_x-small">
+          <a
+            onclick="{!c.processMe}"
+            name="{!v.totalPages}"
+            class="{! (v.currentPageNumber == v.totalPages) ? 'selected' : ''}"
+            >{!v.totalPages}</a
+          >
         </span>
         <lightning:button
-          label="Next"
           iconName="utility:chevronright"
           iconPosition="right"
-          disabled="{! v.isLastPage}"
+          disabled="{! v.currentPageNumber == v.totalPages}"
           onclick="{!c.onNext}"
+        />
+        <lightning:button
+          label="Last"
+          iconName="utility:right"
+          iconPosition="right"
+          disabled="{! v.currentPageNumber == v.totalPages}"
+          onclick="{!c.onLast}"
         />
       </lightning:layoutItem>
     </lightning:layout>
