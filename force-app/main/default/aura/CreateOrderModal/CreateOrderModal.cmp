@@ -1,0 +1,71 @@
+<aura:component
+  implements="force:lightningQuickAction,force:hasRecordId"
+  controller="CreateOrderController"
+>
+  <aura:attribute name="data" type="Object" />
+  <aura:attribute name="allData" type="Object" />
+  <aura:attribute name="columns" type="List" />
+
+  <aura:attribute name="pageNumber" type="Integer" default="1" />
+  <aura:attribute name="pageSize" type="Integer" default="10" />
+  <aura:attribute name="isLastPage" type="Boolean" default="false" />
+  <aura:attribute name="resultSize" type="Integer" default="0" />
+  <!-- attribute to hold selected all rows -->
+  <aura:attribute name="selection" type="List" />
+  <!-- attribute to check if the page has changed or not -->
+  <aura:attribute name="hasPageChanged" type="Boolean" />
+  <!-- attribute to check if it is initialLoad -->
+  <aura:attribute name="initialLoad" type="Boolean" default="true" />
+
+  <aura:handler name="init" value="{! this }" action="{! c.init }" />
+
+  <div style="margin-bottom: 15px">
+    <lightning:input
+      name="filter"
+      label="Filter by Product Name"
+      onchange="{! c.handleFilterChange }"
+    />
+  </div>
+
+  <lightning:card>
+    <lightning:layout multipleRows="true" horizontalAlign="center">
+      <lightning:layoutItem padding="around-small" size="12">
+        <lightning:datatable
+          aura:id="accountDataTable"
+          columns="{! v.columns }"
+          data="{! v.data }"
+          keyField="Id"
+          hideCheckboxColumn="false"
+          selectedRows="{!v.selection}"
+          onrowaction="{! c.handleRowAction }"
+          onrowselection="{!c.onRowSelection}"
+        />
+      </lightning:layoutItem>
+      <lightning:layoutItem padding="around-small" flexibility="auto">
+        <lightning:button
+          label="Prev"
+          iconName="utility:chevronleft"
+          iconPosition="left"
+          onclick="{!c.onPrev}"
+          disabled="{! v.pageNumber == 1}"
+        />
+        <span class="slds-p-horizontal_small">
+          Page {!v.pageNumber} | Showing records from {!
+          ((v.pageNumber-1)*v.pageSize)+' to
+          '+((v.pageNumber-1)*v.pageSize+v.resultSize)}
+        </span>
+        <lightning:button
+          label="Next"
+          iconName="utility:chevronright"
+          iconPosition="right"
+          disabled="{! v.isLastPage}"
+          onclick="{!c.onNext}"
+        />
+      </lightning:layoutItem>
+    </lightning:layout>
+  </lightning:card>
+
+  <footer class="slds-modal__footer">
+    <lightning:button variant="brand" label="Next" onclick="{!c.next}" />
+  </footer>
+</aura:component>
