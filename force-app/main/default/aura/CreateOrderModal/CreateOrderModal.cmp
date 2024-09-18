@@ -2,6 +2,7 @@
   implements="force:lightningQuickAction,force:hasRecordId"
   controller="CreateOrderController"
 >
+  <aura:attribute name="discount" type="Double" />
   <aura:attribute name="data" type="Object" />
   <aura:attribute name="columns" type="List" />
   <aura:attribute name="recordId" type="String" />
@@ -31,7 +32,6 @@
       <lightning:layoutItem padding="around-small" size="12">
         <lightning:datatable
           class="fixedHeightTable"
-          aura:id="accountDataTable"
           columns="{! v.columns }"
           data="{! v.data }"
           keyField="Id"

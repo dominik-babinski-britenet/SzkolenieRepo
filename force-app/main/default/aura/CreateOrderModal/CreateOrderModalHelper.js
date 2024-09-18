@@ -31,6 +31,24 @@
     $A.enqueueAction(action);
   },
 
+  getOpportunityDiscount: function (component, helper) {
+    let action = component.get('c.getTotalDiscountForOpportunity');
+    let recordId = component.get('v.recordId');
+
+    action.setParams({ recordId: recordId });
+    action.setStorable();
+    action.setCallback(this, function (response) {
+      let state = response.getState();
+      console.log(response.getState());
+      if (state === 'SUCCESS') {
+        console.log(response.getReturnValue());
+        component.set('v.discount', response.getReturnValue());
+      }
+    });
+
+    $A.enqueueAction(action);
+  },
+
   recalculateFilter: function (component, helper) {
     let filteredData = helper.getFilteredData(component);
 
@@ -69,6 +87,7 @@
     }
     component.set('v.data', data);
     helper.generatePageList(component, pageNumber);
+    component.set('v.selection', component.get('v.selection'));
   },
 
   generatePageList: function (component, pageNumber) {

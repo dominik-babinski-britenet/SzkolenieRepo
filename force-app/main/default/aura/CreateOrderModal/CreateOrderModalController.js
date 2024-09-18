@@ -11,6 +11,7 @@
       { label: 'Price', fieldName: 'UnitPrice', type: 'currency' }
     ]);
 
+    helper.getOpportunityDiscount(component, helper);
     helper.loadData(component, helper);
   },
 
@@ -18,20 +19,13 @@
     var selectedRows = event.getParam('selectedRows');
     var allSelectedRows = component.get('v.selection') || [];
 
-    // Merge newly selected rows with existing ones
     selectedRows.forEach(function (row) {
-      if (!allSelectedRows.some((existingRow) => existingRow.Id === row.Id)) {
-        allSelectedRows.push(row);
+      if (!allSelectedRows.some((existingRow) => existingRow === row.Id)) {
+        allSelectedRows.push(row.Id);
       }
     });
 
-    // Remove rows that are no longer selected in the visible table
-    var data = component.get('v.data');
-    var filteredSelectedRows = allSelectedRows.filter(function (row) {
-      return data.some((dataRow) => dataRow.Id === row.Id);
-    });
-
-    component.set('v.selection', filteredSelectedRows);
+    component.set('v.selection', allSelectedRows);
   },
 
   filter: function (component, event, helper) {
