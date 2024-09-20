@@ -1,8 +1,10 @@
 ({
   loadData: function (component, helper) {
     let action = component.get('c.getProductPrices');
+
     action.setStorable();
     action.setCallback(this, function (response) {
+      let discountPercent = component.get('v.discount');
       let state = response.getState();
       if (state === 'SUCCESS') {
         component.set(
@@ -18,7 +20,8 @@
             ProductName: item.Product2.Name,
             ProductCode: item.Product2.ProductCode,
             Description: item.Product2.Description,
-            UnitPrice: item.UnitPrice
+            OriginalPrice: item.UnitPrice,
+            UnitPrice: item.UnitPrice * (1 - discountPercent / 100)
           };
         });
 
@@ -28,6 +31,53 @@
         helper.buildData(component, helper);
       }
     });
+
+    $A.enqueueAction(action);
+  },
+  createOrder: function (component) {
+    let data = component.get('v.data');
+    console.log(`data: ${JSON.stringify(data)}`);
+    let action = component.get('c.createNewOrder');
+
+    action.setParams({
+      opportunityId: component.get('v.recordId'),
+      priceBookEntries: data.map((item) => item.Id),
+      productPrices: data.map((item) => item.UnitPrice),
+      quantities: data.map((item) => item.Quantity)
+    });
+
+    console.log(
+      `data.map((item)=> item.Id): ${JSON.stringify(data.map((item) => item.Id))}`
+    );
+
+    action.setCallback(this, function (response) {
+      let state = response.getState();
+      console.log(state);
+
+      if (state === 'SUCCESS') {
+        let toastEvent = $A.get('e.force:showToast');
+
+        toastEvent.setParams({
+          title: $A.get('$Label.c.Success'),
+          message: $A.get('$Label.c.Order_Created_Toast'),
+          type: 'success'
+        });
+
+        toastEvent.fire();
+        $A.get('e.force:closeQuickAction').fire();
+      }
+      if (state === 'ERROR') {
+        let toastEvent = $A.get('e.force:showToast');
+
+        toastEvent.setParams({
+          title: $A.get('$Label.c.Error'),
+          message: response.getError()[0].message,
+          type: 'error'
+        });
+
+        toastEvent.fire();
+      }
+    });
     $A.enqueueAction(action);
   },
 
@@ -35,18 +85,56 @@
     let action = component.get('c.getTotalDiscountForOpportunity');
     let recordId = component.get('v.recordId');
 
-    action.setParams({ recordId: recordId });
+    action.setParams({ opportunityId: recordId });
     action.setStorable();
     action.setCallback(this, function (response) {
       let state = response.getState();
-      console.log(response.getState());
       if (state === 'SUCCESS') {
-        console.log(response.getReturnValue());
         component.set('v.discount', response.getReturnValue());
       }
     });
 
     $A.enqueueAction(action);
+  },
+
+  setDefaultSelectionColumns: function (component) {
+    component.set('v.columns', [
+      {
+        label: $A.get('$Label.c.Product_Name'),
+        fieldName: 'ProductName',
+        type: 'text'
+      },
+      {
+        label: $A.get('$Label.c.Product_Code'),
+        fieldName: 'ProductCode',
+        type: 'text'
+      },
+      {
+        label: $A.get('$Label.c.Description'),
+        fieldName: 'Description',
+        type: 'text'
+      },
+      {
+        label: $A.get('$Label.c.Original_Price'),
+        fieldName: 'OriginalPrice',
+        type: 'currency'
+      },
+      {
+        label: $A.get('$Label.c.Discounted_Price'),
+        fieldName: 'UnitPrice',
+        type: 'currency'
+      }
+    ]);
+  },
+
+  insertSelectedData: function (component, helper) {
+    let selectedIds = component.get('v.selection');
+    let allData = component.get('v.allData');
+    let selectedData = allData.filter(function (item) {
+      return selectedIds.includes(item.Id);
+    });
+    selectedData.forEach((item) => (item.Quantity = 0));
+    component.set('v.data', selectedData);
   },
 
   recalculateFilter: function (component, helper) {
