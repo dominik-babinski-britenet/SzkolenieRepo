@@ -50,6 +50,7 @@
 
     component.set('v.selectionPage', false);
     helper.insertSelectedData(component, helper);
+    helper.calculateOrderTotal(component);
   },
 
   handleSaveEdition: function (component, event, helper) {
@@ -66,6 +67,7 @@
     component.set('v.data', data);
     component.set('v.draftValues', []);
     component.set('v.priceSummary', 'Discount: ${}Total Price: ${} ');
+    helper.calculateOrderTotal(component);
   },
 
   returnToSelection: function (component, event, helper) {

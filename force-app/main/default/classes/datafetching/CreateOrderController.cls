@@ -1,11 +1,29 @@
 public with sharing class CreateOrderController {
     @AuraEnabled(cacheable=true)
-    public static List<PricebookEntry> getProductPrices() {
+    public static List<PricebookEntry> getProductPrices(Id opportunityId) {
         return [
             SELECT Id, Product2.Name, Product2.ProductCode, Product2.Description, UnitPrice
             FROM PricebookEntry
-            WHERE Pricebook2.IsStandard = TRUE AND IsActive = TRUE
+            WHERE Pricebook2.Id = :getPricebookIdFromOpportunityId(opportunityId) AND IsActive = TRUE
         ];
+    }
+
+    @AuraEnabled
+    public static Id getPricebookIdFromOpportunityId(Id opportunityId) {
+        Account userAccount = [
+            SELECT Partner__c
+            FROM Account
+            WHERE Id IN (SELECT AccountId FROM Opportunity WHERE Id = :opportunityId)
+            LIMIT 1
+        ];
+
+        String pricebookName = 'Non-Partner Pricebook';
+
+        if (userAccount != null && userAccount.Partner__c == true) {
+            pricebookName = 'Partner Pricebook';
+        }
+
+        return [SELECT Id FROM Pricebook2 WHERE Name = :pricebookName LIMIT 1].Id;
     }
 
     @AuraEnabled(cacheable=true)
@@ -32,8 +50,7 @@ public with sharing class CreateOrderController {
             AccountId = accountId,
             EffectiveDate = Date.today(),
             Status = 'Draft',
-            Pricebook2Id = [SELECT Pricebook2Id FROM PricebookEntry WHERE Pricebook2.IsStandard = TRUE LIMIT 1]
-            .Pricebook2Id
+            Pricebook2Id = getPricebookIdFromOpportunityId(opportunityId)
         );
 
         insert newOrder;

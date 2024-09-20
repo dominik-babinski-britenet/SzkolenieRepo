@@ -3,6 +3,7 @@
     let action = component.get('c.getProductPrices');
 
     action.setStorable();
+    action.setParams({ opportunityId: component.get('v.recordId') });
     action.setCallback(this, function (response) {
       let discountPercent = component.get('v.discount');
       let state = response.getState();
@@ -34,6 +35,19 @@
 
     $A.enqueueAction(action);
   },
+
+  calculateOrderTotal: function (component) {
+    let data = component.get('v.data');
+    let orderTotal = data.reduce((acc, item) => {
+      return acc + item.Quantity * item.UnitPrice;
+    }, 0);
+
+    let currencyCode = $A.get('$Locale.currencyCode');
+    let formattedCurrency = orderTotal.toFixed(2) + ' ' + currencyCode;
+
+    component.set('v.totalPrice', formattedCurrency);
+  },
+
   createOrder: function (component) {
     let data = component.get('v.data');
     console.log(`data: ${JSON.stringify(data)}`);
@@ -46,13 +60,8 @@
       quantities: data.map((item) => item.Quantity)
     });
 
-    console.log(
-      `data.map((item)=> item.Id): ${JSON.stringify(data.map((item) => item.Id))}`
-    );
-
     action.setCallback(this, function (response) {
       let state = response.getState();
-      console.log(state);
 
       if (state === 'SUCCESS') {
         let toastEvent = $A.get('e.force:showToast');

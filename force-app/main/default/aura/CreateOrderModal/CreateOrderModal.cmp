@@ -18,6 +18,8 @@
   <aura:attribute name="draftValues" type="Object" default="[]" />
   <aura:attribute name="errors" type="Object" default="[]" />
   <aura:attribute name="priceSummary" type="String" />
+  <aura:attribute name="totalPrice" type="String" />
+
   <aura:handler name="init" value="{! this }" action="{! c.init }" />
 
   <aura:if isTrue="{!v.selectionPage}">
@@ -134,8 +136,10 @@
               data="{! v.data }"
               keyField="Id"
               hideCheckboxColumn="true"
+              oncellchange="{! c.handleSaveEdition}"
               onsave="{! c.handleSaveEdition }"
               errors="{! v.errors }"
+              suppressBottomBar="true"
             />
           </lightning:layoutItem>
           <lightning:layoutItem
@@ -145,17 +149,39 @@
         </lightning:layout>
       </lightning:card>
 
-      <footer class="slds-modal__footer">
-        <lightning:button
-          variant="neutral"
-          label="{!$Label.c.Back}"
-          onclick="{!c.returnToSelection}"
-        />
-        <lightning:button
-          variant="brand"
-          label="{!$Label.c.Complete}"
-          onclick="{!c.completeOrder}"
-        />
+      <footer class="slds-modal__footer slds-grid slds-grid_align-spread">
+        <div class="slds-text-body_regular">
+          <div
+            style="
+              min-width: 150px;
+              display: flex;
+              justify-content: space-between;
+            "
+          >
+            {!$Label.c.Total}: {!v.totalPrice}
+          </div>
+          <div
+            style="
+              min-width: 150px;
+              display: flex;
+              justify-content: space-between;
+            "
+          >
+            {!$Label.c.Discount}: {!v.discount}%
+          </div>
+        </div>
+        <div>
+          <lightning:button
+            variant="neutral"
+            label="{!$Label.c.Back}"
+            onclick="{!c.returnToSelection}"
+          />
+          <lightning:button
+            variant="brand"
+            label="{!$Label.c.Complete}"
+            onclick="{!c.completeOrder}"
+          />
+        </div>
       </footer>
     </aura:set>
   </aura:if>
