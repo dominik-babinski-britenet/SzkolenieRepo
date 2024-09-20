@@ -4,6 +4,7 @@
 
     action.setStorable();
     action.setParams({ opportunityId: component.get('v.recordId') });
+    component.set('v.isDataLoading', true);
     action.setCallback(this, function (response) {
       let discountPercent = component.get('v.discount');
       let state = response.getState();
@@ -29,6 +30,7 @@
         component.set('v.allData', allData);
         component.set('v.filteredData', allData);
         component.set('v.currentPageNumber', 1);
+        component.set('v.isDataLoading', false);
         helper.buildData(component, helper);
       }
     });
@@ -48,10 +50,10 @@
     component.set('v.totalPrice', formattedCurrency);
   },
 
-  createOrder: function (component) {
+  createOrder: function (component, helper) {
     let data = component.get('v.data');
-    console.log(`data: ${JSON.stringify(data)}`);
     let action = component.get('c.createNewOrder');
+    component.set('v.isDataLoading', true);
 
     action.setParams({
       opportunityId: component.get('v.recordId'),
@@ -64,28 +66,22 @@
       let state = response.getState();
 
       if (state === 'SUCCESS') {
-        let toastEvent = $A.get('e.force:showToast');
+        helper.showToast(
+          $A.get('$Label.c.Success'),
+          $A.get('$Label.c.Order_Created_Toast'),
+          'success'
+        );
 
-        toastEvent.setParams({
-          title: $A.get('$Label.c.Success'),
-          message: $A.get('$Label.c.Order_Created_Toast'),
-          type: 'success'
-        });
-
-        toastEvent.fire();
         $A.get('e.force:closeQuickAction').fire();
       }
       if (state === 'ERROR') {
-        let toastEvent = $A.get('e.force:showToast');
-
-        toastEvent.setParams({
-          title: $A.get('$Label.c.Error'),
-          message: response.getError()[0].message,
-          type: 'error'
-        });
-
-        toastEvent.fire();
+        helper.showToast(
+          $A.get('$Label.c.Error'),
+          response.getError()[0].message,
+          'error'
+        );
       }
+      component.set('v.isDataLoading', false);
     });
     $A.enqueueAction(action);
   },
@@ -222,5 +218,17 @@
       }
     }
     component.set('v.pageList', pageList);
+  },
+
+  showToast: function (title, message, type) {
+    let toastEvent = $A.get('e.force:showToast');
+
+    toastEvent.setParams({
+      title: title,
+      message: message,
+      type: type
+    });
+
+    toastEvent.fire();
   }
 });

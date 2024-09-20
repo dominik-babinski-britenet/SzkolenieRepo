@@ -2,7 +2,8 @@
   implements="force:lightningQuickAction,force:hasRecordId"
   controller="CreateOrderController"
 >
-  <aura:attribute name="discount" type="Double" />
+  <aura:attribute name="discount" type="Double" default="0." />
+  <aura:attribute name="isDataLoading" type="Boolean" default="False" />
   <aura:attribute name="data" type="Object" />
   <aura:attribute name="columns" type="List" />
   <aura:attribute name="recordId" type="String" />
@@ -36,15 +37,24 @@
     <lightning:card>
       <lightning:layout multipleRows="true" horizontalAlign="center">
         <lightning:layoutItem padding="around-small" size="12">
-          <lightning:datatable
-            class="fixedHeightTable"
-            columns="{! v.columns }"
-            data="{! v.data }"
-            keyField="Id"
-            hideCheckboxColumn="false"
-            selectedRows="{!v.selection}"
-            onrowselection="{! c.handleRowSelection }"
-          />
+          <aura:if isTrue="{!not(v.isDataLoading)}">
+            <lightning:datatable
+              class="fixedHeightTable"
+              columns="{! v.columns }"
+              data="{! v.data }"
+              keyField="Id"
+              hideCheckboxColumn="false"
+              selectedRows="{!v.selection}"
+              onrowselection="{! c.handleRowSelection }"
+            />
+            <aura:set attribute="else">
+              <lightning:spinner
+                alternativeText="Loading"
+                size="large"
+                variant="brand"
+              />
+            </aura:set>
+          </aura:if>
         </lightning:layoutItem>
         <lightning:layoutItem>
           <lightning:layoutItem
@@ -127,20 +137,30 @@
         <div>
           <h1 class="slds-text-heading_medium">{!$Label.c.Summary}</h1>
         </div>
+
         <lightning:layout multipleRows="true" horizontalAlign="center">
           <lightning:layoutItem padding="around-small" size="12">
-            <lightning:datatable
-              class="fixedHeightTable"
-              columns="{! v.columns }"
-              draftValues="{! v.draftValues }"
-              data="{! v.data }"
-              keyField="Id"
-              hideCheckboxColumn="true"
-              oncellchange="{! c.handleSaveEdition}"
-              onsave="{! c.handleSaveEdition }"
-              errors="{! v.errors }"
-              suppressBottomBar="true"
-            />
+            <aura:if isTrue="{!v.isDataLoading}">
+              <lightning:spinner
+                alternativeText="Loading"
+                size="large"
+                variant="brand"
+              />
+            </aura:if>
+            <aura:if isTrue="{!not(v.isDataLoading)}">
+              <lightning:datatable
+                class="fixedHeightTable"
+                columns="{! v.columns }"
+                draftValues="{! v.draftValues }"
+                data="{! v.data }"
+                keyField="Id"
+                hideCheckboxColumn="true"
+                oncellchange="{! c.handleSaveEdition}"
+                onsave="{! c.handleSaveEdition }"
+                errors="{! v.errors }"
+                suppressBottomBar="true"
+              />
+            </aura:if>
           </lightning:layoutItem>
           <lightning:layoutItem
             padding="around-small"

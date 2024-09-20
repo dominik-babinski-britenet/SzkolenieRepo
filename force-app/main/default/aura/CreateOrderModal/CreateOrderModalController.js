@@ -80,22 +80,19 @@
   completeOrder: function (component, event, helper) {
     let data = component.get('v.data');
 
-    for (let item of data) {
-      if (item.Quantity <= 0) {
-        let toastEvent = $A.get('e.force:showToast');
+    if (data.some((item) => item.Quantity <= 0)) {
+      let toastEvent = $A.get('e.force:showToast');
 
-        toastEvent.setParams({
-          title: $A.get('$Label.c.Error'),
-          message: $A
-            .get('$Label.c.Item_Quantity_Error')
-            .replace('${item.ProductName}', item.ProductName),
-          type: 'error'
-        });
+      toastEvent.setParams({
+        title: $A.get('$Label.c.Error'),
+        message: $A
+          .get('$Label.c.Item_Quantity_Error')
+          .replace('${item.ProductName}', item.ProductName),
+        type: 'error'
+      });
 
-        toastEvent.fire();
-
-        return;
-      }
+      toastEvent.fire();
+      return;
     }
 
     helper.createOrder(component);
