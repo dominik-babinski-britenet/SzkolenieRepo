@@ -1,35 +1,29 @@
 @isTest(SeeAllData=true)
 public class CreateOrderOnOpportunityCloseTest {
-
-    @isTest(SeeAllData=true)
+    @isTest
     static void testCreateOrderOnOpportunityClose() {
         // Step 1: Create a test Account
         Account testAccount = new Account(Name = 'Test Account');
         insert testAccount;
 
         // Step 2: Query the standard pricebook
-        Pricebook2 standardPricebook;
-        try {
-            standardPricebook = [SELECT Id FROM Pricebook2 LIMIT 1];
-        } catch (Exception e) {
-            System.assert(false, 'Standard Pricebook not found or not active.');
-        }
+        Id standardPricebookId = Test.getStandardPricebookId();
 
         // Step 3: Create a test Opportunity
         Opportunity testOpportunity = new Opportunity(
-                Name = 'Test Opportunity',
-                StageName = 'Prospecting',
-                CloseDate = Date.today(),
-                AccountId = testAccount.Id
+            Name = 'Test Opportunity',
+            StageName = 'Prospecting',
+            CloseDate = Date.today(),
+            AccountId = testAccount.Id
         );
         insert testOpportunity;
 
         // Step 4: Create a test Quote and associate it with the Opportunity
         Quote testQuote = new Quote(
-                OpportunityId = testOpportunity.Id,
-                Name = 'Test Quote',
-                Status = 'Accepted',
-                Pricebook2Id = standardPricebook.Id
+            OpportunityId = testOpportunity.Id,
+            Name = 'Test Quote',
+            Status = 'Accepted',
+            Pricebook2Id = standardPricebookId
         );
         insert testQuote;
 
@@ -38,7 +32,11 @@ public class CreateOrderOnOpportunityCloseTest {
         update testOpportunity;
 
         // Step 6: Retrieve Orders created by the trigger
-        List<Order> createdOrders = [SELECT Id, OpportunityId, AccountId, Status, QuoteId FROM Order WHERE OpportunityId = :testOpportunity.Id];
+        List<Order> createdOrders = [
+            SELECT Id, OpportunityId, AccountId, Status, QuoteId
+            FROM Order
+            WHERE OpportunityId = :testOpportunity.Id
+        ];
 
         // Validate that the Order was created
         System.assertEquals(1, createdOrders.size(), 'An Order should have been created');
