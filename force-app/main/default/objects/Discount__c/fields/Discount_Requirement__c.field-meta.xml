@@ -15,14 +15,14 @@
                 <label>More than &lt;Requirement_Value&gt;  books bought</label>
             </value>
             <value>
-                <fullName>OrdersPlacedDisountRequirements</fullName>
+                <fullName>OrdersPlacedDiscountRequirements</fullName>
                 <default>false</default>
                 <label>More than &lt;Requirement_Value&gt; orders placed</label>
             </value>
             <value>
                 <fullName>MoneySpentDiscountRequirements</fullName>
                 <default>false</default>
-                <label>More &lt;Requirement_Value&gt; PLN spent</label>
+                <label>More than &lt;Requirement_Value&gt; PLN spent</label>
             </value>
         </valueSetDefinition>
     </valueSet>
