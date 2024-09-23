@@ -32,7 +32,7 @@ public class CreateOrderOnOpportunityCloseTest {
             WHERE OpportunityId = :testOpportunity.Id
         ];
 
-        System.assertNotEquals(0, createdOrders.size(), 'An Order should have been created');
+        System.assertNotEquals(0, createdOrders.size(), 'An Order should have been created'); //somehow on deploy 2 orders get created here
         System.assertEquals('Draft', createdOrders[0].Status, 'Order status should be Draft');
         System.assertEquals(testOpportunity.Id, createdOrders[0].OpportunityId, 'Order should be linked to the correct Opportunity');
         System.assertEquals(testQuote.Id, createdOrders[0].QuoteId, 'Order should be linked to the correct Quote');
