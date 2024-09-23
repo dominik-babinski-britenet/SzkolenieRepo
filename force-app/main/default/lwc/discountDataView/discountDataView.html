@@ -1,39 +1,45 @@
 <template>
-  <lightning-button
-    label="Create New"
-    onclick={handleCreateButtonClick}
-  ></lightning-button>
   <lightning-card title="Current Discounts">
-    <lightning-tree-grid
-      columns={gridColumns}
-      data={gridData}
-      hide-checkbox-column="true"
-      key-field="Id"
-      onrowaction={handleRowAction}
-    ></lightning-tree-grid>
+    <div class="slds-p-around_medium">
+      <div class="slds-grid slds-grid_align-end slds-m-bottom_medium">
+        <lightning-button
+          label="Create New"
+          variant="brand"
+          onclick={handleCreateButtonClick}
+        ></lightning-button>
+      </div>
 
-    <template if:true={isModalOpen}>
-      <c-confirm-delete-modal
-        record-id={selectedRecordId}
-        record-name={selectedRecordName}
-        onclose={handleModalClose}
-        ondelete={handleDeleteConfirmed}
-      ></c-confirm-delete-modal>
-    </template>
+      <lightning-tree-grid
+        columns={gridColumns}
+        data={gridData}
+        hide-checkbox-column="true"
+        key-field="Id"
+        onrowaction={handleRowAction}
+      ></lightning-tree-grid>
 
-    <template if:true={isEditModalOpen}>
-      <c-edit-discount-modal
-        record-id={selectedRecordId}
-        onedit={handleEdit}
-        onclose={handleModalClose}
-      ></c-edit-discount-modal>
-    </template>
+      <template if:true={isModalOpen}>
+        <c-confirm-delete-modal
+          record-id={selectedRecordId}
+          record-name={selectedRecordName}
+          onclose={handleModalClose}
+          ondelete={handleDeleteConfirmed}
+        ></c-confirm-delete-modal>
+      </template>
 
-    <template if:true={isCreateModalOpen}>
-      <c-create-discount-modal
-        oncreate={handleCreate}
-        onclose={handleModalClose}
-      ></c-create-discount-modal>
-    </template>
+      <template if:true={isEditModalOpen}>
+        <c-edit-discount-modal
+          record-id={selectedRecordId}
+          onedit={handleEdit}
+          onclose={handleModalClose}
+        ></c-edit-discount-modal>
+      </template>
+
+      <template if:true={isCreateModalOpen}>
+        <c-create-discount-modal
+          oncreate={handleCreate}
+          onclose={handleModalClose}
+        ></c-create-discount-modal>
+      </template>
+    </div>
   </lightning-card>
 </template>

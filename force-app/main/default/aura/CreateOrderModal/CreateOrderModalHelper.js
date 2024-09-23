@@ -1,20 +1,19 @@
 ({
   loadData: function (component, helper) {
-    let action = component.get('c.getProductPrices');
+    component.set('v.isDataLoading', true);
 
+    let action = component.get('c.getProductPrices');
     action.setStorable();
     action.setParams({ opportunityId: component.get('v.recordId') });
-    component.set('v.isDataLoading', true);
+
     action.setCallback(this, function (response) {
       let discountPercent = component.get('v.discount');
       let state = response.getState();
       if (state === 'SUCCESS') {
-        component.set(
-          'v.totalPages',
-          Math.ceil(
-            response.getReturnValue().length / component.get('v.pageSize')
-          )
-        );
+        let pageSize = component.get('v.pageSize');
+        let pageCount = Math.ceil(response.getReturnValue().length / pageSize);
+
+        component.set('v.totalPages', pageCount);
 
         let allData = response.getReturnValue().map((item) => {
           return {
@@ -36,6 +35,52 @@
     });
 
     $A.enqueueAction(action);
+  },
+
+  buildData: function (component, helper) {
+    var data = [];
+    var pageNumber = component.get('v.currentPageNumber');
+    var pageSize = component.get('v.pageSize');
+    var filteredData = component.get('v.filteredData');
+    var x = (pageNumber - 1) * pageSize;
+
+    for (; x < pageNumber * pageSize; x++) {
+      if (filteredData[x]) {
+        data.push(filteredData[x]);
+      }
+    }
+    component.set('v.data', data);
+    helper.generatePageList(component, pageNumber);
+    component.set('v.selection', component.get('v.selection'));
+  },
+
+  buildDataForNewFilter: function (component, helper) {
+    helper.setFilteredData(component);
+    let filteredData = component.get('v.filteredData');
+
+    component.set(
+      'v.totalPages',
+      Math.max(1, Math.ceil(filteredData.length / component.get('v.pageSize')))
+    );
+    component.set('v.currentPageNumber', 1);
+
+    helper.buildData(component, helper);
+  },
+
+  setFilteredData: function (component) {
+    let allData = component.get('v.allData');
+    let filter = component.get('v.filter');
+
+    if (!filter) {
+      component.set('v.filteredData', allData);
+      return;
+    }
+
+    let filteredData = allData.filter(function (item) {
+      return item.ProductName.toLowerCase().includes(filter.toLowerCase());
+    });
+
+    component.set('v.filteredData', filteredData);
   },
 
   calculateOrderTotal: function (component) {
@@ -95,7 +140,7 @@
     action.setCallback(this, function (response) {
       let state = response.getState();
       if (state === 'SUCCESS') {
-        component.set('v.discount', response.getReturnValue());
+        component.set('v.discount', response.getReturnValue() || 0);
       }
     });
 
@@ -132,6 +177,37 @@
     ]);
   },
 
+  setSummaryColumns: function (component) {
+    component.set('v.columns', [
+      {
+        label: $A.get('$Label.c.Product_Name'),
+        fieldName: 'ProductName',
+        type: 'text'
+      },
+      {
+        label: $A.get('$Label.c.Product_Code'),
+        fieldName: 'ProductCode',
+        type: 'text'
+      },
+      {
+        label: $A.get('$Label.c.Original_Price'),
+        fieldName: 'OriginalPrice',
+        type: 'currency'
+      },
+      {
+        label: $A.get('$Label.c.Discounted_Price'),
+        fieldName: 'UnitPrice',
+        type: 'currency'
+      },
+      {
+        label: $A.get('$Label.c.Quantity'),
+        fieldName: 'Quantity',
+        type: 'number',
+        editable: true
+      }
+    ]);
+  },
+
   insertSelectedData: function (component, helper) {
     let selectedIds = component.get('v.selection');
     let allData = component.get('v.allData');
@@ -140,47 +216,6 @@
     });
     selectedData.forEach((item) => (item.Quantity = 0));
     component.set('v.data', selectedData);
-  },
-
-  recalculateFilter: function (component, helper) {
-    let filteredData = helper.getFilteredData(component);
-
-    component.set(
-      'v.totalPages',
-      Math.max(1, Math.ceil(filteredData.length / component.get('v.pageSize')))
-    );
-    component.set('v.currentPageNumber', 1);
-    component.set('v.filteredData', filteredData);
-    helper.buildData(component, helper);
-  },
-
-  getFilteredData: function (component) {
-    let allData = component.get('v.allData');
-    let filter = component.get('v.filter');
-    if (!filter) {
-      return allData;
-    }
-    let filteredData = allData.filter(function (item) {
-      return item.ProductName.toLowerCase().includes(filter.toLowerCase());
-    });
-    return filteredData;
-  },
-
-  buildData: function (component, helper) {
-    var data = [];
-    var pageNumber = component.get('v.currentPageNumber');
-    var pageSize = component.get('v.pageSize');
-    var allData = component.get('v.filteredData');
-    var x = (pageNumber - 1) * pageSize;
-
-    for (; x < pageNumber * pageSize; x++) {
-      if (allData[x]) {
-        data.push(allData[x]);
-      }
-    }
-    component.set('v.data', data);
-    helper.generatePageList(component, pageNumber);
-    component.set('v.selection', component.get('v.selection'));
   },
 
   generatePageList: function (component, pageNumber) {

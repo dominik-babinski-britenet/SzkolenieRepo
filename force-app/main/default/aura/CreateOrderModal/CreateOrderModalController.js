@@ -5,97 +5,65 @@
     helper.loadData(component, helper);
   },
 
+  returnToSelection: function (component, event, helper) {
+    helper.setDefaultSelectionColumns(component);
+    component.set('v.data', component.get('v.allData'));
+    component.set('v.filter', '');
+    helper.buildDataForNewFilter(component, helper);
+    component.set('v.selectionPage', true);
+  },
+
   displaySummary: function (component, event, helper) {
     if (component.get('v.selection').length <= 0) {
-      let toastEvent = $A.get('e.force:showToast');
-
-      toastEvent.setParams({
-        title: 'Warning',
-        message: 'No items are selected.',
-        type: 'warning'
-      });
-
-      toastEvent.fire();
+      helper.showToast(
+        $A.get('$Label.c.Error'),
+        $A.get('$Label.c.No_Items_Selected'),
+        'error'
+      );
       return;
     }
 
-    component.set('v.columns', [
-      {
-        label: $A.get('$Label.c.Product_Name'),
-        fieldName: 'ProductName',
-        type: 'text'
-      },
-      {
-        label: $A.get('$Label.c.Product_Code'),
-        fieldName: 'ProductCode',
-        type: 'text'
-      },
-      {
-        label: $A.get('$Label.c.Original_Price'),
-        fieldName: 'OriginalPrice',
-        type: 'currency'
-      },
-      {
-        label: $A.get('$Label.c.Discounted_Price'),
-        fieldName: 'UnitPrice',
-        type: 'currency'
-      },
-      {
-        label: $A.get('$Label.c.Quantity'),
-        fieldName: 'Quantity',
-        type: 'number',
-        editable: true
-      }
-    ]);
-
     component.set('v.selectionPage', false);
+    helper.setSummaryColumns(component);
     helper.insertSelectedData(component, helper);
     helper.calculateOrderTotal(component);
   },
 
+  filter: function (component, event, helper) {
+    helper.buildDataForNewFilter(component, helper);
+  },
+
   handleSaveEdition: function (component, event, helper) {
-    var idQuantityPairs = event.getParam('draftValues');
+    var draftValues = event.getParam('draftValues');
     var data = component.get('v.data');
 
-    idQuantityPairs.forEach((draftValue) => {
-      let recordToUpdate = data.find((record) => record.Id === draftValue.Id);
-      if (recordToUpdate) {
-        recordToUpdate.Quantity = draftValue.Quantity;
+    draftValues.forEach(({ Id, Quantity }) => {
+      const record = data.find((record) => record.Id === Id);
+      if (record) {
+        record.Quantity = Quantity;
       }
     });
 
     component.set('v.data', data);
     component.set('v.draftValues', []);
-    component.set('v.priceSummary', 'Discount: ${}Total Price: ${} ');
     helper.calculateOrderTotal(component);
-  },
-
-  returnToSelection: function (component, event, helper) {
-    helper.setDefaultSelectionColumns(component);
-    component.set('v.data', component.get('v.allData'));
-    helper.recalculateFilter(component, helper);
-    component.set('v.selectionPage', true);
   },
 
   completeOrder: function (component, event, helper) {
     let data = component.get('v.data');
 
     if (data.some((item) => item.Quantity <= 0)) {
-      let toastEvent = $A.get('e.force:showToast');
-
-      toastEvent.setParams({
-        title: $A.get('$Label.c.Error'),
-        message: $A
+      helper.showToast(
+        $A.get('$Label.c.Error'),
+        $A
           .get('$Label.c.Item_Quantity_Error')
           .replace('${item.ProductName}', item.ProductName),
-        type: 'error'
-      });
-
-      toastEvent.fire();
+        'error'
+      );
       return;
     }
 
-    helper.createOrder(component);
+    helper.createOrder(component, helper);
   },
 
   handleRowSelection: function (component, event) {
@@ -117,10 +85,6 @@
     });
 
     component.set('v.selection', currentSelection);
-  },
-
-  filter: function (component, event, helper) {
-    helper.recalculateFilter(component, helper);
   },
 
   onNext: function (component, event, helper) {

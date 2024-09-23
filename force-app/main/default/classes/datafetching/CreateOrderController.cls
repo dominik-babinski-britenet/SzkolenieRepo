@@ -17,11 +17,7 @@ public with sharing class CreateOrderController {
             LIMIT 1
         ];
 
-        String pricebookName = 'Non-Partner Pricebook';
-
-        if (userAccount != null && userAccount.Partner__c == true) {
-            pricebookName = 'Partner Pricebook';
-        }
+        String pricebookName = (userAccount != null && userAccount.Partner__c) ? 'Partner Pricebook' : 'Non-Partner Pricebook';
 
         return [SELECT Id FROM Pricebook2 WHERE Name = :pricebookName LIMIT 1].Id;
     }
@@ -34,35 +30,30 @@ public with sharing class CreateOrderController {
             WHERE Account__c IN (SELECT AccountId FROM Opportunity WHERE Id = :opportunityId)
         ];
 
-        if (results != null && !results.isEmpty()) {
-            return (Double) results[0].get('totalDiscount');
-        }
-
-        return 0.0;
+        return (results != null && !results.isEmpty()) ? (Double) results[0].get('totalDiscount') : 0.0;
     }
 
     @AuraEnabled
     public static void createNewOrder(List<Id> priceBookEntries, List<Double> productPrices, List<Integer> quantities, Id opportunityId) {
         Id accountId = [SELECT AccountId FROM Opportunity WHERE Id = :opportunityId LIMIT 1].AccountId;
+        Id pricebookId = getPricebookIdFromOpportunityId(opportunityId);
 
         Order newOrder = new Order(
             OpportunityId = opportunityId,
             AccountId = accountId,
             EffectiveDate = Date.today(),
             Status = 'Draft',
-            Pricebook2Id = getPricebookIdFromOpportunityId(opportunityId)
+            Pricebook2Id = pricebookId
         );
 
         insert newOrder;
 
-        Id orderID = newOrder.Id;
-        Integer productCountToInsert = priceBookEntries.size();
         List<OrderItem> orderItems = new List<OrderItem>();
 
-        for (Integer i = 0; i < productCountToInsert; i++) {
+        for (Integer i = 0; i < priceBookEntries.size(); i++) {
             orderItems.add(
                 new OrderItem(
-                    OrderId = orderID,
+                    OrderId = newOrder.Id,
                     PricebookEntryId = priceBookEntries[i],
                     UnitPrice = productPrices[i],
                     Quantity = quantities[i]

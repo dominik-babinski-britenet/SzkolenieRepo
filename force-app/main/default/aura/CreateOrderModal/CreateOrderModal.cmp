@@ -18,7 +18,6 @@
   <aura:attribute name="selectionPage" type="Boolean" default="True" />
   <aura:attribute name="draftValues" type="Object" default="[]" />
   <aura:attribute name="errors" type="Object" default="[]" />
-  <aura:attribute name="priceSummary" type="String" />
   <aura:attribute name="totalPrice" type="String" />
 
   <aura:handler name="init" value="{! this }" action="{! c.init }" />
@@ -169,40 +168,42 @@
         </lightning:layout>
       </lightning:card>
 
-      <footer class="slds-modal__footer slds-grid slds-grid_align-spread">
-        <div class="slds-text-body_regular">
-          <div
-            style="
-              min-width: 150px;
-              display: flex;
-              justify-content: space-between;
-            "
-          >
-            {!$Label.c.Total}: {!v.totalPrice}
+      <aura:if isTrue="{!not(v.isDataLoading)}">
+        <footer class="slds-modal__footer slds-grid slds-grid_align-spread">
+          <div class="slds-text-body_regular">
+            <div
+              style="
+                min-width: 150px;
+                display: flex;
+                justify-content: space-between;
+              "
+            >
+              {!$Label.c.Total}: {!v.totalPrice}
+            </div>
+            <div
+              style="
+                min-width: 150px;
+                display: flex;
+                justify-content: space-between;
+              "
+            >
+              {!$Label.c.Discount}: {!v.discount}%
+            </div>
           </div>
-          <div
-            style="
-              min-width: 150px;
-              display: flex;
-              justify-content: space-between;
-            "
-          >
-            {!$Label.c.Discount}: {!v.discount}%
+          <div>
+            <lightning:button
+              variant="neutral"
+              label="{!$Label.c.Back}"
+              onclick="{!c.returnToSelection}"
+            />
+            <lightning:button
+              variant="brand"
+              label="{!$Label.c.Complete}"
+              onclick="{!c.completeOrder}"
+            />
           </div>
-        </div>
-        <div>
-          <lightning:button
-            variant="neutral"
-            label="{!$Label.c.Back}"
-            onclick="{!c.returnToSelection}"
-          />
-          <lightning:button
-            variant="brand"
-            label="{!$Label.c.Complete}"
-            onclick="{!c.completeOrder}"
-          />
-        </div>
-      </footer>
+        </footer>
+      </aura:if>
     </aura:set>
   </aura:if>
 </aura:component>
