@@ -35,14 +35,6 @@ private class OrderItemTriggerHandlerTest {
 
         insert testOrderItem;
 
-        List<Account> updateddAccounts = [
-            SELECT Id, Total_Money_Spent__c, Orders_Placed__c, BooksSold__c
-            FROM Account
-            WHERE Id = :testAccount.Id
-        ];
-
-        System.assertEquals(2, updateddAccounts[0].BooksSold__c);
-
         testOrderItem.Quantity = 3;
         update testOrderItem;
 

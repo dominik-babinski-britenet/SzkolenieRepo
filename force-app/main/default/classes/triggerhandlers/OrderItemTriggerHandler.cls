@@ -9,10 +9,12 @@ public class OrderItemTriggerHandler extends TriggerHandler {
 
     public void updateAccountInfo() {
         Set<Id> accountIds = new Set<Id>();
+        Map<Id, Decimal> newItemsBooksSold = new Map<Id, Decimal>();
 
         for (OrderItem item : (List<OrderItem>) Trigger.new) {
             if (item.Order.AccountId != null) {
                 accountIds.add(item.Order.AccountId);
+                newItemsBooksSold.put(item.Order.AccountId, (newItemsBooksSold.get(item.Order.AccountId) ?? 0) + item.Quantity);
             }
         }
 
@@ -34,7 +36,7 @@ public class OrderItemTriggerHandler extends TriggerHandler {
                 Id = (Id) result.get('AccountId'),
                 Total_Money_Spent__c = (Decimal) result.get('totalMoneySpent'),
                 Orders_Placed__c = (Integer) result.get('ordersPlaced'),
-                BooksSold__c = (Decimal) result.get('totalBooksSold')
+                BooksSold__c = (Decimal) result.get('totalBooksSold') + newItemsBooksSold.get((Id) result.get('AccountId'))
             );
 
             accountsToUpdate.add(acc);
