@@ -3,13 +3,6 @@ public with sharing class OrderTriggerHandler extends TriggerHandler {
         createOrderItems();
     }
     
-    public void closeOpenOpportunities()
-    {
-        List<Opportunity> opportunitiesToClose = new List<Opportunity>();
-
-        
-    }
-
     public void createOrderItems() {
         Set<Id> quoteIds = new Set<Id>();
 

@@ -39,6 +39,12 @@ public with sharing class Product2TriggerHandler extends TriggerHandler {
 
     public override void afterDelete() {
         ProductSynchronize.deleteProducts(convertToExternal((List<Product2>) Trigger.old));
+        removeEmptyLogs();
+    }
+
+    private void removeEmptyLogs() {
+        List<Product_Log__c> logs = [SELECT Id FROM Product_Log__c WHERE Product__c = NULL];
+        delete logs;
     }
 
     private List<Product2> convertToExternal(List<Product2> productList) {
@@ -46,6 +52,7 @@ public with sharing class Product2TriggerHandler extends TriggerHandler {
 
         for (Product2 product : productList) {
             Product2 insertedProduct = product.clone();
+            insertedProduct.Id = product.Id;
             insertedProduct.External__c = true;
             result.add(insertedProduct);
         }
