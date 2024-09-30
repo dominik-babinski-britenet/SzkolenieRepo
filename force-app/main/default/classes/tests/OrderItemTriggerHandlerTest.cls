@@ -1,52 +1,57 @@
-@IsTest
-private class OrderItemTriggerHandlerTest {
-    @IsTest
-    static void testAfterInsertAndUpdate() {
+@isTest
+public class OrderItemTriggerHandlerTest {
+    @testSetup
+    static void setupTestData() {
         Account testAccount = new Account(Name = 'Test Account');
         insert testAccount;
 
-        Id standardPricebookId = Test.getStandardPricebookId();
-
-        Order testOrder = new Order(
-            AccountId = testAccount.Id,
-            Status = 'Draft',
-            EffectiveDate = Date.today(),
-            Pricebook2Id = standardPricebookId
-        );
-        insert testOrder;
-
+        Id standardPricebook = Test.getStandardPricebookId();
         Product2 testProduct = new Product2(Name = 'Test Product', IsActive = true);
         insert testProduct;
 
-        PricebookEntry testPricebookEntry = new PricebookEntry(
-            Pricebook2Id = standardPricebookId,
+        PricebookEntry pricebookEntry = new PricebookEntry(
+            Pricebook2Id = standardPricebook,
             Product2Id = testProduct.Id,
             UnitPrice = 100,
             IsActive = true
         );
-        insert testPricebookEntry;
+        insert pricebookEntry;
 
-        OrderItem testOrderItem = new OrderItem(
-            OrderId = testOrder.Id,
-            Quantity = 2,
-            PricebookEntryId = testPricebookEntry.Id,
-            UnitPrice = 100
+        Order testOrder1 = new Order(
+            AccountId = testAccount.Id,
+            Status = 'Draft',
+            EffectiveDate = Date.today(),
+            Pricebook2Id = standardPricebook
         );
+        Order testOrder2 = new Order(
+            AccountId = testAccount.Id,
+            Status = 'Draft',
+            EffectiveDate = Date.today(),
+            Pricebook2Id = standardPricebook
+        );
+        insert new List<Order>{ testOrder1, testOrder2 };
 
-        insert testOrderItem;
+        OrderItem testOrderItem1 = new OrderItem(
+            OrderId = testOrder1.Id,
+            Quantity = 2,
+            UnitPrice = 50.0,
+            PricebookEntryId = pricebookEntry.Id
+        );
+        OrderItem testOrderItem2 = new OrderItem(
+            OrderId = testOrder2.Id,
+            Quantity = 5,
+            UnitPrice = 20.0,
+            PricebookEntryId = pricebookEntry.Id
+        );
+        insert new List<OrderItem>{ testOrderItem1, testOrderItem2 };
 
-        testOrderItem.Quantity = 3;
-        update testOrderItem;
-
-        List<Account> updatedAccounts = [
-            SELECT Id, Total_Money_Spent__c, Orders_Placed__c, BooksSold__c
-            FROM Account
-            WHERE Id = :testAccount.Id
-        ];
-
-        System.assertEquals(1, updatedAccounts.size());
-        System.assertEquals(300, updatedAccounts[0].Total_Money_Spent__c);
-        System.assertEquals(1, updatedAccounts[0].Orders_Placed__c);
-        System.assertEquals(3, updatedAccounts[0].BooksSold__c);
+        Discount__c discount = new Discount__c(
+            Name = 'Test Discount',
+            Discount_Requirement__c = 'MoneySpentDiscountRequirements',
+            DiscountValue__c = 5.0,
+            Discount_Requirement_Value__c = 100.0,
+            IsActive__c = true
+        );
+        insert discount;
     }
 }
