@@ -63,4 +63,11 @@ public with sharing class CreateOrderController {
 
         insert orderItems;
     }
+
+    @AuraEnabled
+    public static void closeOpportunity(Id opportunityId) {
+        Opportunity opportunityToClose = [SELECT Id, StageName FROM Opportunity WHERE Id = :opportunityId LIMIT 1];
+        opportunityToClose.StageName = 'Closed Won';
+        update opportunityToClose;
+    }
 }

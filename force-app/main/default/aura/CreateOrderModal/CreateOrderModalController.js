@@ -64,6 +64,7 @@
     }
 
     helper.createOrder(component, helper);
+    helper.closeOpportunity(component, helper);
   },
 
   handleRowSelection: function (component, event) {

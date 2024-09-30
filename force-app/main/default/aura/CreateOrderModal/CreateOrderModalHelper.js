@@ -131,6 +131,12 @@
     $A.enqueueAction(action);
   },
 
+  closeOpportunity: function (component, helper) {
+    let action = component.get('c.closeOpportunity');
+    action.setParams({ opportunityId: component.get('v.recordId') });
+    $A.enqueueAction(action);
+  },
+
   getOpportunityDiscount: function (component, helper) {
     let action = component.get('c.getTotalDiscountForOpportunity');
     let recordId = component.get('v.recordId');

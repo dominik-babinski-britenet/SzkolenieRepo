@@ -17,7 +17,7 @@ public with sharing class Product2TriggerHandler extends TriggerHandler {
         Boolean allowSyncing = Allow_Sync__c.getOrgDefaults().Active__c;
 
         for (Product2 product : (List<Product2>) Trigger.new) {
-            if (!allowSyncing && product.External__c) {
+            if (ProductRestService.syncRequests <= 0 && product.External__c) {
                 product.addError('You cannot update external products');
             }
         }
@@ -31,7 +31,7 @@ public with sharing class Product2TriggerHandler extends TriggerHandler {
         Boolean allowSyncing = Allow_Sync__c.getOrgDefaults().Active__c;
 
         for (Product2 product : (List<Product2>) Trigger.old) {
-            if (!allowSyncing && product.External__c) {
+            if (ProductRestService.syncRequests <= 0 && product.External__c) {
                 product.addError('You cannot delete external products');
             }
         }

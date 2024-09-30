@@ -18,7 +18,7 @@ public with sharing class ProductSynchronize {
         httpRequest.setBody(body);
 
         Http http = new Http();
-        String status = 'Pending';
+        String status = 'Pending'; // TODO: Utils
 
         try {
             HttpResponse response = http.send(httpRequest);
