@@ -8,13 +8,24 @@ public class OrderItemTriggerHandler extends TriggerHandler {
     }
 
     public void updateAccountInfo() {
-        Set<Id> accountIds = new Set<Id>();
-        Map<Id, Decimal> newItemsBooksSold = new Map<Id, Decimal>();
+        Set<Id> orderIds = new Set<Id>();
 
         for (OrderItem item : (List<OrderItem>) Trigger.new) {
-            if (item.Order.AccountId != null) {
-                accountIds.add(item.Order.AccountId);
-                newItemsBooksSold.put(item.Order.AccountId, (newItemsBooksSold.get(item.Order.AccountId) ?? 0) + item.Quantity);
+            if (item.OrderId != null) {
+                orderIds.add(item.OrderId);
+            }
+        }
+
+        if (orderIds.isEmpty()) {
+            return;
+        }
+
+        Map<Id, Order> ordersWithAccount = new Map<Id, Order>([SELECT Id, AccountId FROM Order WHERE Id IN :orderIds]);
+        Set<Id> accountIds = new Set<Id>();
+
+        for (OrderItem item : (List<OrderItem>) Trigger.new) {
+            if (item.OrderId != null) {
+                accountIds.add(ordersWithAccount.get(item.OrderId).AccountId);
             }
         }
 
@@ -22,26 +33,48 @@ public class OrderItemTriggerHandler extends TriggerHandler {
             return;
         }
 
+        removeDiscounts(accountIds);
+        addDiscounts(accountIds);
+    }
+
+    private void addDiscounts(Set<Id> accountIds) {
+        List<AccountDiscount__c> discountsToInsert = new List<AccountDiscount__c>();
         List<AggregateResult> results = [
-            SELECT AccountId, SUM(TotalAmount) totalMoneySpent, COUNT(Id) ordersPlaced, SUM(Order_Items__c) totalBooksSold
-            FROM Order
-            WHERE AccountId IN :accountIds
-            GROUP BY AccountId
+            SELECT
+                Order.AccountId Account,
+                COUNT_DISTINCT(OrderId) TotalOrders,
+                SUM(Order_Item_Total_Value__c) TotalSpent,
+                SUM(Quantity) BooksBought
+            FROM OrderItem
+            WHERE Order.AccountId IN :accountIds
+            GROUP BY Order.AccountId
         ];
 
-        List<Account> accountsToUpdate = new List<Account>();
+        for (Discount__c discount : [SELECT Id, Discount_Requirement__c, Discount_Requirement_Value__c, IsActive__c FROM Discount__c]) {
+            if (!discount.IsActive__c) {
+                continue;
+            }
 
-        for (AggregateResult result : results) {
-            Account acc = new Account(
-                Id = (Id) result.get('AccountId'),
-                Total_Money_Spent__c = (Decimal) result.get('totalMoneySpent'),
-                Orders_Placed__c = (Integer) result.get('ordersPlaced'),
-                BooksSold__c = (Decimal) result.get('totalBooksSold') + newItemsBooksSold.get((Id) result.get('AccountId'))
-            );
+            DiscountRequirements requirementFunctionToUse = (DiscountRequirements) Type.forName(discount.Discount_Requirement__c)
+                .newInstance();
 
-            accountsToUpdate.add(acc);
+            for (AggregateResult aggregateRecord : results) {
+                if (requirementFunctionToUse.isEligibleForDiscount(aggregateRecord, (Double) discount.Discount_Requirement_Value__c)) {
+                    discountsToInsert.add(
+                        new AccountDiscount__c(Account__c = (Id) aggregateRecord.get('Account'), Discount__c = discount.Id)
+                    );
+                }
+            }
         }
 
-        update accountsToUpdate;
+        insert discountsToInsert;
+    }
+
+    private void removeDiscounts(Set<Id> accountsToRemove) {
+        delete [
+            SELECT Id, Account__c, Discount__c
+            FROM AccountDiscount__c
+            WHERE Account__c IN :accountsToRemove
+        ];
     }
 }

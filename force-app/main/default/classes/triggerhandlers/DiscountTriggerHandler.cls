@@ -31,9 +31,14 @@ public class DiscountTriggerHandler extends TriggerHandler {
 
     private void addDiscounts(List<Discount__c> discountsToAdd) {
         List<AccountDiscount__c> discountsToInsert = new List<AccountDiscount__c>();
-        List<Account> allAccounts = [
-            SELECT Id, Orders_Placed__c, BooksSold__c, Total_Money_Spent__c
-            FROM Account
+        List<AggregateResult> results = [
+            SELECT
+                Order.AccountId Account,
+                COUNT_DISTINCT(OrderId) TotalOrders,
+                SUM(Order_Item_Total_Value__c) TotalSpent,
+                SUM(Quantity) BooksBought
+            FROM OrderItem
+            GROUP BY Order.AccountId
         ];
 
         for (Discount__c discount : discountsToAdd) {
@@ -44,9 +49,11 @@ public class DiscountTriggerHandler extends TriggerHandler {
             DiscountRequirements requirementFunctionToUse = (DiscountRequirements) Type.forName(discount.Discount_Requirement__c)
                 .newInstance();
 
-            for (Account acc : allAccounts) {
-                if (requirementFunctionToUse.isEligibleForDiscount(acc, (Double) discount.Discount_Requirement_Value__c)) {
-                    discountsToInsert.add(new AccountDiscount__c(Account__c = acc.Id, Discount__c = discount.Id));
+            for (AggregateResult aggregateRecord : results) {
+                if (requirementFunctionToUse.isEligibleForDiscount(aggregateRecord, (Double) discount.Discount_Requirement_Value__c)) {
+                    discountsToInsert.add(
+                        new AccountDiscount__c(Account__c = (Id) aggregateRecord.get('Account'), Discount__c = discount.Id)
+                    );
                 }
             }
         }
