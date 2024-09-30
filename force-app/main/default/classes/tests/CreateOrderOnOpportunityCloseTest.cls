@@ -1,5 +1,5 @@
 @isTest(SeeAllData=true)
-public class CreateOrderOnOpportunityCloseTest {
+private class CreateOrderOnOpportunityCloseTest {
     @isTest
     static void testCreateOrderOnOpportunityClose() {
         Account testAccount = new Account(Name = 'Test Account');
