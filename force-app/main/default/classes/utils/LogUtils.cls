@@ -1,5 +1,6 @@
 public class LogUtils {
-    static final String STATUS = 'STATUS';
-    static final String FAILED = 'FAILED';
-    static final String CONNETION_ERROR = 'CONNECTION_ERROR';
+    public static final String PENDING = 'PENDING';
+    public static final String SUCCESS = 'SUCCESS';
+    public static final String FAILED = 'FAILED';
+    public static final String CONNECTION_ERROR = 'CONNECTION_ERROR';
 }

@@ -19,9 +19,9 @@ global with sharing class ProductRestService {
             }
             upsert productsToUpsert ProductExternalId__c;
 
-            response.responseBody = Blob.valueOf('{"Status": "Success"}');
+            response.responseBody = Blob.valueOf('{"Status": "' + LogUtils.SUCCESS + '"}');
         } catch (Exception e) {
-            response.responseBody = Blob.valueOf('{"Status": "Failed"}');
+            response.responseBody = Blob.valueOf('{"Status": "' + LogUtils.FAILED + '"}');
         } finally {
             syncRequests -= 1;
         }

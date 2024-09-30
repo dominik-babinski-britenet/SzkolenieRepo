@@ -18,14 +18,14 @@ public with sharing class ProductSynchronize {
         httpRequest.setBody(body);
 
         Http http = new Http();
-        String status = 'Pending'; // TODO: Utils
+        String status = LogUtils.PENDING;
 
         try {
             HttpResponse response = http.send(httpRequest);
             Map<String, Object> resultMap = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
             status = (String) resultMap.get('Status');
         } catch (Exception e) {
-            status = 'Connection Error';
+            status = LogUtils.CONNECTION_ERROR;
         }
 
         logRequest(method, header, body, status);
