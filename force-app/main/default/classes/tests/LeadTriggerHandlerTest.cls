@@ -37,4 +37,22 @@ public class LeadTriggerHandlerTest {
         List<Database.LeadConvert> leadConversions = new List<Database.LeadConvert>{ lcPartner, lcCustomer };
         Database.convertLead(leadConversions, false);
     }
+
+    @isTest
+    static void testLeadTrigger() {
+        Lead testLead = new Lead(
+            FirstName = 'Test',
+            LastName = 'Lead',
+            Company = 'Test Company',
+            IsConverted = false,
+            Email = 'random@mail123.com'
+        );
+        insert testLead;
+
+        testLead.Company = 'Updated Test Company';
+        update testLead;
+
+        Lead updatedLead = [SELECT Id, Company FROM Lead WHERE Id = :testLead.Id];
+        System.assertEquals('Updated Test Company', updatedLead.Company, 'The company name should be updated');
+    }
 }
