@@ -1,6 +1,6 @@
 @RestResource(urlMapping='/productsync/*')
 global with sharing class ProductRestService {
-    public static Integer syncRequests = 0;
+    public static Boolean isSyncing = false;
 
     @HttpPost
     global static void handlePostRequest() {
@@ -8,7 +8,7 @@ global with sharing class ProductRestService {
         RestResponse response = RestContext.response;
         response.addHeader('Content-Type', 'application/json');
 
-        syncRequests += 1;
+        isSyncing = true;
 
         try {
             String productsJson = request.requestBody.toString();
@@ -23,7 +23,7 @@ global with sharing class ProductRestService {
         } catch (Exception e) {
             response.responseBody = Blob.valueOf('{"Status": "' + LogUtils.FAILED + '"}');
         } finally {
-            syncRequests -= 1;
+            isSyncing = false;
         }
     }
 
@@ -46,13 +46,13 @@ global with sharing class ProductRestService {
             WHERE ProductExternalId__c IN :externalProductIds
         ];
 
-        syncRequests += 1;
+        isSyncing = true;
 
         try {
             delete productsToDelete;
         } catch (Exception e) {
         } finally {
-            syncRequests -= 1;
+            isSyncing = false;
         }
     }
 }

@@ -10,36 +10,38 @@ public with sharing class Product2TriggerHandler extends TriggerHandler {
     }
 
     public override void afterInsert() {
-        ProductSynchronize.upsertProducts(convertToExternal((List<Product2>) Trigger.new));
+        if (!ProductRestService.isSyncing) {
+            System.enqueueJob(new QueueableProductSync(convertToExternal((List<Product2>) Trigger.new), 'POST'));
+        }
     }
 
     public override void beforeUpdate() {
-        Boolean allowSyncing = Allow_Sync__c.getOrgDefaults().Active__c;
-
         for (Product2 product : (List<Product2>) Trigger.new) {
-            if (ProductRestService.syncRequests <= 0 && product.External__c) {
+            if (!ProductRestService.isSyncing && product.External__c) {
                 product.addError('You cannot update external products');
             }
         }
     }
 
     public override void afterUpdate() {
-        ProductSynchronize.upsertProducts(convertToExternal((List<Product2>) Trigger.new));
+        if (!ProductRestService.isSyncing) {
+            System.enqueueJob(new QueueableProductSync(convertToExternal((List<Product2>) Trigger.new), 'POST'));
+        }
     }
 
     public override void beforeDelete() {
-        Boolean allowSyncing = Allow_Sync__c.getOrgDefaults().Active__c;
-
         for (Product2 product : (List<Product2>) Trigger.old) {
-            if (ProductRestService.syncRequests <= 0 && product.External__c) {
+            if (!ProductRestService.isSyncing && product.External__c) {
                 product.addError('You cannot delete external products');
             }
         }
     }
 
     public override void afterDelete() {
-        ProductSynchronize.deleteProducts(convertToExternal((List<Product2>) Trigger.old));
-        removeEmptyLogs();
+        if (!ProductRestService.isSyncing) {
+            System.enqueueJob(new QueueableProductSync(convertToExternal((List<Product2>) Trigger.new), 'DELETE'));
+            removeEmptyLogs();
+        }
     }
 
     private void removeEmptyLogs() {
