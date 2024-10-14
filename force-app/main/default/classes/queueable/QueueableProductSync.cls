@@ -20,7 +20,7 @@ public class QueueableProductSync implements Queueable, Database.AllowsCallouts 
         httpRequest.setBody(body);
 
         Http http = new Http();
-        String status = LogUtils.PENDING;
+        status = LogUtils.PENDING;
         ProductRestService.DataModel dataModel = new ProductRestService.DataModel();
 
         try {
@@ -29,9 +29,9 @@ public class QueueableProductSync implements Queueable, Database.AllowsCallouts 
             status = dataModel.status;
         } catch (Exception e) {
             status = LogUtils.CONNECTION_ERROR;
+        } finally {
+            logId = logRequest();
         }
-
-        logId = logRequest();
     }
 
     public Id logRequest() {
@@ -44,9 +44,20 @@ public class QueueableProductSync implements Queueable, Database.AllowsCallouts 
         logger.Status__c = status;
 
         insert logger;
+        Set<Id> existingProducts = new Set<Id>();
+
+        for (Product2 product : [SELECT Id FROM Product2 WHERE Id IN :sentProducts]) {
+            existingProducts.add(product.Id);
+        }
 
         for (Product2 product : sentProducts) {
-            logsToInsert.add(new Product_Log__c(Product__c = product.Id, Rest_Logger__c = logger.Id));
+            Product_Log__c productLog = new Product_Log__c(
+                Rest_Logger__c = logger.Id,
+                ProductExternalId__c = product.ProductExternalId__c,
+                Product__c = existingProducts.contains(product.Id) ? product.Id : null
+            );
+
+            logsToInsert.add(productLog);
         }
 
         insert logsToInsert;

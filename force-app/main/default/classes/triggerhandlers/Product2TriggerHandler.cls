@@ -40,13 +40,7 @@ public with sharing class Product2TriggerHandler extends TriggerHandler {
     public override void afterDelete() {
         if (!ProductRestService.IS_SYNCING) {
             System.enqueueJob(new QueueableProductSync(convertToExternal((List<Product2>) Trigger.old), 'DELETE'));
-            removeEmptyLogs();
         }
-    }
-
-    private void removeEmptyLogs() {
-        List<Product_Log__c> logs = [SELECT Id FROM Product_Log__c WHERE Product__c = NULL];
-        delete logs;
     }
 
     private List<Product2> convertToExternal(List<Product2> productList) {

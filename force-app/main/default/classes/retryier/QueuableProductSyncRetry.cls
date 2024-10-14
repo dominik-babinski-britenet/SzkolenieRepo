@@ -10,22 +10,40 @@ public class QueuableProductSyncRetry {
     public QueuableProductSyncRetry(RestLogger__c logger) {
         this.logger = logger;
         this.method = logger.Method__c;
-        List<Product_Log__c> loggerProducts = [
-            SELECT
-                Product__r.Name,
-                Product__r.Author__c,
-                Product__r.IsActive,
-                Product__r.External__c,
-                Product__r.ProductExternalId__c,
-                Product__r.ProductClass,
-                Product__r.ProductCode,
-                Product__r.Description
-            FROM Product_Log__c
-            WHERE Rest_Logger__c = :logger.Id
-        ];
+        List<Product_Log__c> loggerProducts;
 
-        for (Product_Log__c productLog : loggerProducts) {
-            products.add(productLog.Product__r);
+        if (method == 'POST') {
+            loggerProducts = [
+                SELECT
+                    Product__r.Name,
+                    Product__r.Author__c,
+                    Product__r.IsActive,
+                    Product__r.External__c,
+                    Product__r.ProductExternalId__c,
+                    Product__r.ProductClass,
+                    Product__r.ProductCode,
+                    Product__r.Description
+                FROM Product_Log__c
+                WHERE Rest_Logger__c = :logger.Id
+            ];
+
+            for (Product_Log__c productLog : loggerProducts) {
+                products.add(productLog.Product__r);
+            }
+
+            return;
+        }
+
+        if (method == 'DELETE') {
+            loggerProducts = [
+                SELECT ProductExternalId__c
+                FROM Product_Log__c
+                WHERE Rest_Logger__c = :logger.Id
+            ];
+
+            for (Product_Log__c productLog : loggerProducts) {
+                products.add(new Product2(ProductExternalId__c = productLog.ProductExternalId__c));
+            }
         }
     }
 

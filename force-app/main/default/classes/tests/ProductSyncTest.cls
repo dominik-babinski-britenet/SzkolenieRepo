@@ -133,19 +133,12 @@ private class ProductSyncTest {
         Assert.areEqual(true, SyncCalloutMock.wasExecuted);
     }
 
-    @isTest
-    static void ensureRecordDeletionResultsInLogDeletion() {
-        Product2 product = new Product2(Name = 'Test');
-        insert product;
-        RestLogger__c logger = new RestLogger__c();
-        insert logger;
-        Product_Log__c productLog = new Product_Log__c(Product__c = product.Id, Rest_Logger__c = logger.Id);
-        insert productLog;
-
-        List<Product_Log__c> logs = [SELECT Id FROM Product_Log__c WHERE Product__c = :product.Id];
-        Assert.areEqual(1, logs.size());
-        delete product;
-        logs = [SELECT Id FROM Product_Log__c WHERE Product__c = :product.Id];
-        Assert.areEqual(0, logs.size());
+    class DataGenerator extends TestDataGenerator {
+        public void createData() {
+            createProduct();
+            Product2 externalProduct = createProduct();
+            externalProduct.External__c = true;
+            update externalProduct;
+        }
     }
 }
