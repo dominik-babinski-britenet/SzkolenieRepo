@@ -1,22 +1,22 @@
-public class BatchedRetry implements Database.Batchable<sObject> {
-    public Id logId;
-    public String method;
-    public Retry_Job__c retryJob;
-
-    public BatchedRetry(Id logId, Retry_Job__c retryJob, String method) {
-        this.logId = logId;
-        this.retryJob = retryJob;
-        this.method = method;
-    }
-
+public class BatchedRetry implements Database.Batchable<sObject>, Database.AllowsCallouts {
     public Database.QueryLocator start(Database.BatchableContext context) {
         return Database.getQueryLocator(
-            [SELECT Rest_Logger__r.Method__c, Product__r.Name, Product__r.Id FROM Product_Log__c WHERE Rest_Logger__c = :logId]
+            [
+                SELECT Id, Method__c, Retries__c, Status__c
+                FROM RestLogger__c
+                WHERE (Status__c = :LogUtils.FAILED OR Status__c = :LogUtils.CONNECTION_ERROR) AND Retries__c < 3
+            ]
         );
     }
 
     public void execute(Database.BatchableContext context, List<SObject> scope) {
-        System.enqueueJob(new QueuableProductSyncRetry(scope, retryJob, method));
+        if (scope == null || scope.size() <= 0) {
+            return;
+        }
+
+        for (RestLogger__c restLogger : (List<RestLogger__c>) scope) {
+            new QueuableProductSyncRetry(restLogger).execute();
+        }
     }
 
     public void finish(Database.BatchableContext context) {

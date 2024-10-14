@@ -1,45 +1,57 @@
-public class QueuableProductSyncRetry implements Queueable, Database.AllowsCallouts {
+public class QueuableProductSyncRetry {
     private Boolean scheduled = false;
     private String body;
     private String header;
     private String method;
     private String status;
-    private List<Product2> products;
-    private Retry_Job__c retryJob;
+    private RestLogger__c logger = new RestLogger__c();
+    private List<Product2> products = new List<Product2>();
 
-    public QueuableProductSyncRetry(List<Product2> products, Retry_Job__c retryJob, String method) {
-        this.products = products;
-        this.method = method;
-        this.retryJob = retryJob;
+    public QueuableProductSyncRetry(RestLogger__c logger) {
+        this.logger = logger;
+        this.method = logger.Method__c;
+        List<Product_Log__c> loggerProducts = [
+            SELECT
+                Product__r.Name,
+                Product__r.Author__c,
+                Product__r.IsActive,
+                Product__r.External__c,
+                Product__r.ProductExternalId__c,
+                Product__r.ProductClass,
+                Product__r.ProductCode,
+                Product__r.Description
+            FROM Product_Log__c
+            WHERE Rest_Logger__c = :logger.Id
+        ];
+
+        for (Product_Log__c productLog : loggerProducts) {
+            products.add(productLog.Product__r);
+        }
     }
 
-    public void execute(QueueableContext context) {
+    public void execute() {
         HttpRequest httpRequest = new HttpRequest();
-        String header = 'application/json;  charset=utf-8';
         httpRequest.setMethod(method);
-        httpRequest.setHeader('Content-Type', header);
-        httpRequest.setEndpoint('callout:SynchronizeProductsLegacy/services/apexrest/productsync');
+        httpRequest.setEndpoint('callout:SynchronizeProducts/services/apexrest/productsync');
 
         String body = JSON.serialize(products);
         httpRequest.setBody(body);
 
         Http http = new Http();
         String status = LogUtils.PENDING;
+        ProductRestService.DataModel dataModel = new ProductRestService.DataModel();
 
         try {
             HttpResponse response = http.send(httpRequest);
-            Map<String, Object> resultMap = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
-            status = (String) resultMap.get('Status');
+            dataModel = (ProductRestService.DataModel) JSON.deserialize(response.getBody().toString(), ProductRestService.DataModel.class);
+            status = dataModel.status;
         } catch (Exception e) {
             status = LogUtils.CONNECTION_ERROR;
+            System.debug(e);
         } finally {
-            retryJob.Items_synced__c = retryJob.Items_synced__c + products.size();
-
-            if (status == LogUtils.FAILED || status == LogUtils.CONNECTION_ERROR) {
-                retryJob.Has_failed__c = true;
-            }
-
-            update retryJob;
+            logger.Status__c = status;
+            logger.Retries__c = logger.Retries__c + 1;
+            update logger;
         }
     }
 }

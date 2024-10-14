@@ -13,37 +13,25 @@ public class QueueableProductSync implements Queueable, Database.AllowsCallouts 
 
     public void execute(QueueableContext context) {
         HttpRequest httpRequest = new HttpRequest();
-        String header = 'application/json;  charset=utf-8';
         httpRequest.setMethod(method);
-        httpRequest.setHeader('Content-Type', header);
-        httpRequest.setEndpoint('callout:SynchronizeProductsLegacy/services/apexrest/productsync');
+        httpRequest.setEndpoint('callout:SynchronizeProducts/services/apexrest/productsync');
 
         String body = JSON.serialize(products);
         httpRequest.setBody(body);
 
         Http http = new Http();
         String status = LogUtils.PENDING;
+        ProductRestService.DataModel dataModel = new ProductRestService.DataModel();
 
         try {
             HttpResponse response = http.send(httpRequest);
-            Map<String, Object> resultMap = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
-            status = (String) resultMap.get('Status');
+            dataModel = (ProductRestService.DataModel) JSON.deserialize(response.getBody().toString(), ProductRestService.DataModel.class);
+            status = dataModel.status;
         } catch (Exception e) {
             status = LogUtils.CONNECTION_ERROR;
         }
 
         logId = logRequest();
-
-        if (status == LogUtils.FAILED || status == LogUtils.CONNECTION_ERROR) {
-            String cronExpression = '0 0 10 * * ?';
-            String jobName = logId;
-            SyncAttempt__c syncAttempt = new SyncAttempt__c(Rest_Logger__c = logId);
-            insert syncAttempt;
-
-            Id jobId = System.schedule(jobName, cronExpression, new RetryScheduler(logId, syncAttempt, method));
-            syncAttempt.ScheduledJobId__c = jobId;
-            update syncAttempt;
-        }
     }
 
     public Id logRequest() {

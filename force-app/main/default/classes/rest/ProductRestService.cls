@@ -1,14 +1,14 @@
 @RestResource(urlMapping='/productsync/*')
 global with sharing class ProductRestService {
-    public static Boolean isSyncing = false;
+    public static Boolean IS_SYNCING = false;
 
     @HttpPost
     global static void handlePostRequest() {
         RestRequest request = RestContext.request;
         RestResponse response = RestContext.response;
-        response.addHeader('Content-Type', 'application/json');
 
-        isSyncing = true;
+        IS_SYNCING = true;
+        DataModel dataModel = new DataModel();
 
         try {
             String productsJson = request.requestBody.toString();
@@ -18,12 +18,12 @@ global with sharing class ProductRestService {
                 product.Id = null;
             }
             upsert productsToUpsert ProductExternalId__c;
-
-            response.responseBody = Blob.valueOf('{"Status": "' + LogUtils.SUCCESS + '"}');
+            dataModel.status = LogUtils.SUCCESS;
         } catch (Exception e) {
-            response.responseBody = Blob.valueOf('{"Status": "' + LogUtils.FAILED + '"}');
+            dataModel.status = LogUtils.FAILED;
         } finally {
-            isSyncing = false;
+            response.responseBody = Blob.valueOf(JSON.serialize(dataModel));
+            IS_SYNCING = false;
         }
     }
 
@@ -46,13 +46,21 @@ global with sharing class ProductRestService {
             WHERE ProductExternalId__c IN :externalProductIds
         ];
 
-        isSyncing = true;
+        IS_SYNCING = true;
+        DataModel dataModel = new DataModel();
 
         try {
             delete productsToDelete;
+            dataModel.status = LogUtils.SUCCESS;
         } catch (Exception e) {
+            dataModel.status = LogUtils.FAILED;
         } finally {
-            isSyncing = false;
+            response.responseBody = Blob.valueOf(JSON.serialize(dataModel));
+            IS_SYNCING = false;
         }
+    }
+
+    public class DataModel {
+        public String status { get; set; }
     }
 }
