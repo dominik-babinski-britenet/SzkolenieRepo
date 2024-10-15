@@ -62,6 +62,9 @@ public with sharing class CreateOrderController {
         }
 
         insert orderItems;
+
+        newOrder.Status = 'Activated';
+        update newOrder;
     }
 
     @AuraEnabled

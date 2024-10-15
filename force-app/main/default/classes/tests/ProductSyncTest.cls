@@ -1,8 +1,13 @@
 @isTest
 private class ProductSyncTest {
+    @TestSetup
+    static void createData() {
+        new DataGenerator().createData();
+    }
+
     @isTest
     static void testRestUpsert() {
-        Product2 product = new Product2(Name = 'Test', ProductExternalId__c = 'abc');
+        Product2 product = [SELECT Id, ProductExternalId__c FROM Product2 WHERE External__c = FALSE];
 
         RestRequest req = new RestRequest();
         RestResponse res = new RestResponse();
@@ -26,19 +31,8 @@ private class ProductSyncTest {
 
     @isTest
     static void ensureNewProductsGetExternalId() {
-        Product2 product = new Product2(Name = 'Test');
-        insert product;
-
-        Product2 productWithExternalId = [SELECT Id, ProductExternalId__c FROM Product2 WHERE Id = :product.Id];
-
+        Product2 productWithExternalId = [SELECT Id, ProductExternalId__c FROM Product2 WHERE External__c = FALSE];
         Assert.areNotEqual(null, productWithExternalId.ProductExternalId__c);
-    }
-
-    @isTest
-    static void ensureNewExternalProductsDontGetTheirExternalIdChanged() {
-        Product2 product = new Product2(Name = 'Test', External__c = true, ProductExternalId__c = '123');
-        insert product;
-        Assert.areEqual(product.ProductExternalId__c, '123');
     }
 
     @isTest
@@ -56,15 +50,12 @@ private class ProductSyncTest {
     static void ensureNoSyncRequestOnExternalProductInserted() {
         Assert.areEqual(false, SyncCalloutMock.wasExecuted);
         Test.startTest();
-        Product2 product = new Product2(Name = 'Test', External__c = true);
-        insert product;
-
         Test.setMock(HttpCalloutMock.class, new SyncCalloutMock(LogUtils.SUCCESS));
-        product.Name = '123';
         try {
-            update product;
+            Product2 product = new Product2(Name = 'Test', External__c = true);
+            insert product;
         } catch (Exception e) {
-            System.debug(e.getMessage());
+            System.debug(e);
         } finally {
             Test.stopTest();
             Assert.areEqual(false, SyncCalloutMock.wasExecuted);
@@ -75,9 +66,9 @@ private class ProductSyncTest {
     static void ensureExternalRecordsCantBeUpdated() {
         Test.setMock(HttpCalloutMock.class, new SyncCalloutMock(LogUtils.SUCCESS));
         Test.startTest();
-        Product2 product = new Product2(Name = 'Test', External__c = true);
-        insert product;
-        product.Name = 'Other test';
+        Product2 product = [SELECT Id, ProductExternalId__c FROM Product2 WHERE External__c = TRUE];
+        String nameToSet = 'Test 123';
+        product.Name = nameToSet;
 
         try {
             update product;
@@ -85,29 +76,28 @@ private class ProductSyncTest {
             System.debug(e.toString());
         } finally {
             Test.stopTest();
-            Product2 updatedProduct = [SELECT Name FROM Product2];
-            Assert.areEqual('Test', updatedProduct.Name);
+            Product2 updatedProduct = [SELECT Name FROM Product2 WHERE External__c = TRUE];
+            Assert.areNotEqual(nameToSet, updatedProduct.Name);
         }
     }
 
     @isTest
-    static void ensureNonExternalRecordsUpdatedResultsInSync() {
+    static void ensureNonExternalRecordsCanBeUpdated() {
         Test.setMock(HttpCalloutMock.class, new SyncCalloutMock(LogUtils.SUCCESS));
         Test.startTest();
-        Product2 product = new Product2(Name = 'Test');
-        insert product;
-        product.Name = 'Other test';
+        Product2 product = [SELECT Id, ProductExternalId__c FROM Product2 WHERE External__c = FALSE];
+        String nameToSet = 'Test 123';
+        product.Name = nameToSet;
         update product;
         Test.stopTest();
-        Assert.areEqual('Other test', product.Name);
+        Assert.areEqual(nameToSet, product.Name);
     }
 
     @isTest
     static void ensureExternalRecordsCantBeDeleted() {
         Test.setMock(HttpCalloutMock.class, new SyncCalloutMock(LogUtils.SUCCESS));
         Test.startTest();
-        Product2 product = new Product2(Name = 'Test', External__c = true);
-        insert product;
+        Product2 product = [SELECT Id, ProductExternalId__c FROM Product2 WHERE External__c = TRUE];
 
         try {
             delete product;
@@ -115,17 +105,15 @@ private class ProductSyncTest {
             System.debug(e.toString());
         } finally {
             Test.stopTest();
-            Product2 updatedProduct = [SELECT Name FROM Product2];
+            Product2 updatedProduct = [SELECT Name FROM Product2 WHERE External__c = TRUE];
             Assert.areNotEqual(null, updatedProduct);
         }
     }
 
     @isTest
     static void ensureNonExternalRecordsDeletionResultsInSync() {
-        Product2 product = new Product2(Name = 'Test');
+        Product2 product = [SELECT Id, ProductExternalId__c FROM Product2 WHERE External__c = FALSE];
         Test.startTest();
-        insert product;
-
         Test.setMock(HttpCalloutMock.class, new SyncCalloutMock(LogUtils.SUCCESS));
         delete product;
         Test.stopTest();
@@ -136,9 +124,11 @@ private class ProductSyncTest {
     class DataGenerator extends TestDataGenerator {
         public void createData() {
             createProduct();
+            ProductRestService.IS_SYNCING = true;
             Product2 externalProduct = createProduct();
             externalProduct.External__c = true;
             update externalProduct;
+            ProductRestService.IS_SYNCING = false;
         }
     }
 }

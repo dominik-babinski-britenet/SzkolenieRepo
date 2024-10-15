@@ -1,6 +1,10 @@
 public with sharing class Product2TriggerHandler extends TriggerHandler {
     public override void beforeInsert() {
         for (Product2 product : (List<Product2>) Trigger.new) {
+            if (!ProductRestService.IS_SYNCING && product.External__c) {
+                product.addError('You cannot update external products');
+            }
+
             if (product.External__c) {
                 continue;
             }
