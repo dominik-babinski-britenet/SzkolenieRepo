@@ -8,6 +8,7 @@ export default class ReturnOrder extends LightningElement {
   subjectVal = 'Temporary subject';
   channelName = '/event/Case_Created__e';
   subscription = {};
+  isLoading = false;
 
   isTableValid() {
     try {
@@ -19,34 +20,35 @@ export default class ReturnOrder extends LightningElement {
   }
 
   connectedCallback() {
+    //TODO: Throw it out
     this.subscribeToReturnEvent();
   }
 
   async handleFormSubmit() {
-    if (this.isTableValid() === false) {
+    if (!this.isTableValid()) {
       return;
     }
     //
-    //show spinner
-
+    this.isLoading = true;
     try {
       const caseId = await this.submitForm();
       await this.createJunctionItems(caseId); //alex powiedzial promise.all oraz allsettled
       //check for external products
       //if external products;
-
-      await this.sendExternalItems();
-      this.subscribeToReturnEvent();
+      if (true) {
+        await this.sendExternalItems();
+        this.subscribeToReturnEvent();
+        this.isLoading = false;
+      }
 
       //await platform event
     } catch (error) {
       console.error(error);
-    } finally {
-      //hide spinner
     }
   }
 
   subscribeToReturnEvent() {
+    console.log('was executed at all');
     subscribe(
       this.channelName,
       -1,
@@ -62,6 +64,7 @@ export default class ReturnOrder extends LightningElement {
     unsubscribe(this.subscription, (msg) => {
       console.log(`msg: ${JSON.stringify(msg)}`);
     });
+    this.isLoading = false;
   }
 
   submitForm() {
