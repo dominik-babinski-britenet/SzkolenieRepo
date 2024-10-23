@@ -22,7 +22,7 @@ public with sharing class Product2TriggerHandler extends TriggerHandler {
     public override void beforeUpdate() {
         for (Product2 product : (List<Product2>) Trigger.new) {
             if (!ProductRestService.IS_SYNCING && product.External__c) {
-                product.addError('You cannot update external products');
+                product.addError('You cannot update external products'); // TODO: To Label
             }
         }
     }

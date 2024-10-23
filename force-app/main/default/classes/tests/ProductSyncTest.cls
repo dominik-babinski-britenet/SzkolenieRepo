@@ -48,6 +48,7 @@ private class ProductSyncTest {
 
     @isTest
     static void ensureNoSyncRequestOnExternalProductInserted() {
+        Exception exception;
         Assert.areEqual(false, SyncCalloutMock.wasExecuted);
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, new SyncCalloutMock(LogUtils.SUCCESS));
@@ -55,7 +56,7 @@ private class ProductSyncTest {
             Product2 product = new Product2(Name = 'Test', External__c = true);
             insert product;
         } catch (Exception e) {
-            System.debug(e);
+            System.debug(e); // TODO: Compare to label of an error
         } finally {
             Test.stopTest();
             Assert.areEqual(false, SyncCalloutMock.wasExecuted);
