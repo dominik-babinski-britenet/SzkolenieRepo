@@ -87,5 +87,13 @@ export default class ReturnOrderItemChoice extends LightningElement {
   }
 
   @api
-  getSelectedData() {}
+  getSelectedData() {
+    let sentData = [];
+
+    for (let selectedRow of this.selection) {
+      sentData.push(this.gridData.find((row) => row.Id === selectedRow.Id));
+    }
+
+    return sentData;
+  }
 }

@@ -1,14 +1,18 @@
 import { LightningElement } from 'lwc';
 import createJunctions from '@salesforce/apex/ReturnOrdersController.insertJunctionObjects';
 import sendItemsViaRest from '@salesforce/apex/ReturnOrdersController.sendExternalItems';
+import createCase from '@salesforce/apex/ReturnOrdersController.createCase';
+import filterExternalProducts from '@salesforce/apex/ReturnOrdersController.filterExternalItems';
 import { subscribe, unsubscribe } from 'lightning/empApi';
 
 export default class ReturnOrder extends LightningElement {
   statusVal = 'New';
   subjectVal = 'Temporary subject';
   channelName = '/event/Case_Created__e';
+  caseExternalId = '';
   subscription = {};
   isLoading = false;
+  descriptionVal = '';
 
   isTableValid() {
     try {
@@ -28,20 +32,26 @@ export default class ReturnOrder extends LightningElement {
     if (!this.isTableValid()) {
       return;
     }
-    //
+
     this.isLoading = true;
     try {
-      const caseId = await this.submitForm();
-      await this.createJunctionItems(caseId); //alex powiedzial promise.all oraz allsettled
-      //check for external products
-      //if external products;
-      if (true) {
-        await this.sendExternalItems();
+      const resultMap = await this.createCase();
+      const caseId = resultMap.caseId;
+      const caseExternalId = resultMap.caseExternalId;
+      this.caseExternalId = caseExternalId;
+
+      let createdItems = await this.createJunctionItems(caseId, caseExternalId);
+
+      let externalItems = await filterExternalProducts({
+        initialItems: createdItems
+      });
+
+      if (externalItems.size() > 0) {
+        await this.sendExternalItems(caseExternalId);
         this.subscribeToReturnEvent();
+      } else {
         this.isLoading = false;
       }
-
-      //await platform event
     } catch (error) {
       console.error(error);
     }
@@ -67,24 +77,8 @@ export default class ReturnOrder extends LightningElement {
     this.isLoading = false;
   }
 
-  submitForm() {
-    return new Promise((resolve, reject) => {
-      const form = this.template.querySelector('lightning-record-edit-form');
-
-      form.addEventListener('success', (event) => {
-        resolve(event.detail.id);
-      });
-
-      form.addEventListener('error', (event) => {
-        reject(event.detail.error);
-      });
-
-      form.submit();
-    });
-  }
-
-  async sendExternalItems(caseId) {
-    const data = { caseId: caseId };
+  async sendExternalItems(caseExternalId) {
+    const data = { caseExternalId: caseExternalId };
     try {
       await sendItemsViaRest(data);
     } catch (error) {
@@ -92,7 +86,17 @@ export default class ReturnOrder extends LightningElement {
     }
   }
 
-  async createJunctionItems(caseId) {
+  async createCase() {
+    const data = {
+      caseStatus: this.statusVal,
+      caseSubject: this.subjectVal,
+      caseDescription: this.descriptionVal
+    };
+
+    await createCase(data);
+  }
+
+  async createJunctionItems(caseId, caseExternalId) {
     let tableData = this.refs.table.getSelectedData();
     let junctionObjectData = [];
 
@@ -100,6 +104,7 @@ export default class ReturnOrder extends LightningElement {
     for (let row of tableData) {
       junctionObjectData.push({
         Case__c: caseId,
+        Case_External_Id__c: caseExternalId,
         Order_Product__c: row.Id,
         Returned_Quantity__c: row.ReturnedQuantity,
         Status__c: 'Pending',
@@ -108,6 +113,9 @@ export default class ReturnOrder extends LightningElement {
       });
     }
 
-    await createJunctions({ junctionObjectData });
+    let createdItems = await createJunctions({
+      itemsToInsert: junctionObjectData
+    });
+    return createdItems;
   }
 }

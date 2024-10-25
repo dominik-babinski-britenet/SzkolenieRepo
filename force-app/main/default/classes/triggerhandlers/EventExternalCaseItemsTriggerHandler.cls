@@ -8,7 +8,11 @@ public class EventExternalCaseItemsTriggerHandler extends TriggerHandler {
             String externalCaseId = event.Case_Identificator__c;
 
             casesToInsert.add(
-                new Case(Status = 'New', Subject = String.format('External return order of id {0}', new List<String>{ externalCaseId }))
+                new Case(
+                    Status = 'New',
+                    Subject = String.format('External return order of id {0}', new List<String>{ externalCaseId }),
+                    Case_External_Id__c = externalCaseId
+                )
             );
 
             for (OrderItem item : orderItems) {
@@ -26,9 +30,16 @@ public class EventExternalCaseItemsTriggerHandler extends TriggerHandler {
                     Status__c = 'Pending',
                     Strategy__c = 'None',
                     Returned_Quantity__c = item.Quantity,
-                    Product__r = new Product2(ProductExternalId__c = item.Product2.ProductExternalId__c)
+                    Product__r = new Product2(ProductExternalId__c = item.Product2.ProductExternalId__c),
+                    Case_External_Id__c = externalCaseId
                 )
             );
+        }
+
+        insert returnItems;
+
+        for (Case createdCase : casesToInsert) {
+            System.enqueueJob(new CaseCreatedEventQueueable(createdCase.Case_External_Id__c));
         }
     }
 }
