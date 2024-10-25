@@ -25,7 +25,7 @@ export default class ReturnOrder extends LightningElement {
 
   connectedCallback() {
     //TODO: Throw it out
-    this.subscribeToReturnEvent();
+    //this.subscribeToReturnEvent();
   }
 
   async handleFormSubmit() {
