@@ -14,11 +14,16 @@ export default class ReturnOrder extends LightningElement {
   isLoading = false;
   descriptionVal = '';
 
-  isTableValid() {
+  checkIfTableIsValid() {
     try {
       const table = this.refs.table;
+      console.log(
+        `table.isDataValid(): ${JSON.stringify(table.isDataValid())}`
+      );
       return table.isDataValid();
     } catch (e) {
+      console.log('halohalo');
+      console.log(e.message);
       return false;
     }
   }

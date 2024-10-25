@@ -50,42 +50,28 @@ export default class ReturnOrderItemChoice extends LightningElement {
 
   handleRowSelection(event) {
     this.selectedRows = event.detail.selectedRows.map((row) => row.Id);
-    console.log(
-      `event.detail.selectedRows: ${JSON.stringify(event.detail.selectedRows)}`
-    );
-    console.log(`this.selectedRows: ${JSON.stringify(this.selectedRows)}`);
-    console.log(`this.getData: ${JSON.stringify(this.getSelectedData())}`);
   }
 
-  @api //checkValidity
+  @api
   isDataValid() {
-    let selection = this.selectedRows;
-    console.log(`selection: ${JSON.stringify(selection)}`);
     let draftValues = this.template.querySelector(
       'lightning-datatable'
     ).draftValues;
-    console.log(`draftValues: ${JSON.stringify(draftValues)}`);
     let data = this.gridData;
+    console.log(`draftValues: ${JSON.stringify(draftValues)}`);
     console.log(`data: ${JSON.stringify(data)}`);
 
-    for (let value of selection) {
-      let draftValueForRow = draftValues.find(
-        (draftValue) => draftValue.Id === value
-      );
+    for (let selectedRow of this.selectedRows) {
+      let draftValueForRow = draftValues.find((row) => row.Id === selectedRow);
+      console.log(`draftValueForRow: ${JSON.stringify(draftValueForRow)}`);
+      let returnItemQuantity = draftValueForRow
+        ? Number(draftValueForRow.ReturnedQuantity)
+        : 0;
+      console.log(`returnItemQuantity: ${JSON.stringify(returnItemQuantity)}`);
+      let gridItem = data.find((item) => item.Id === selectedRow);
+      let totalQuantityOfItem = gridItem ? Number(gridItem.Quantity) : 0;
 
-      if (draftValueForRow) {
-        data.find((item) => item.Id === value).ReturnedQuantity =
-          draftValueForRow.ReturnedQuantity;
-      }
-    }
-
-    this.gridData = data;
-
-    for (let row of this.gridData) {
-      const quantity = Number(row.Quantity);
-      const returnedQuantity = Number(row.returnedQuantity);
-
-      if (quantity < 0 || returnedQuantity > quantity) {
+      if (returnItemQuantity > totalQuantityOfItem || returnItemQuantity <= 0) {
         return false;
       }
     }
@@ -100,17 +86,10 @@ export default class ReturnOrderItemChoice extends LightningElement {
       'lightning-datatable'
     ).draftValues;
 
-    console.log(`this.selectedRows: ${JSON.stringify(this.selectedRows)}`);
-
     try {
       for (let selectedRow of this.selectedRows) {
-        console.log(`selectedRow: ${JSON.stringify(selectedRow)}`);
         let gridElement = this.gridData.find((row) => row.Id === selectedRow);
-        console.log(`this.gridData: ${JSON.stringify(this.gridData)}`);
-        console.log(`gridElement: ${JSON.stringify(gridElement)}`);
-
         let draftRow = draftData.find((row) => row.Id === selectedRow);
-
         gridElement.ReturnedQuantity = draftRow ? draftRow.ReturnedQuantity : 0;
         sentData.push(gridElement);
       }
