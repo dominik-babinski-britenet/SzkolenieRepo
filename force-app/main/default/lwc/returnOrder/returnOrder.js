@@ -1,9 +1,10 @@
-import { LightningElement } from 'lwc';
+import { LightningElement, wire } from 'lwc';
 import createJunctions from '@salesforce/apex/ReturnOrdersController.insertJunctionObjects';
 import sendItemsViaRest from '@salesforce/apex/ReturnOrdersController.sendExternalItems';
 import createCase from '@salesforce/apex/ReturnOrdersController.createCase';
 import filterExternalProducts from '@salesforce/apex/ReturnOrdersController.filterExternalItems';
 import { subscribe, unsubscribe } from 'lightning/empApi';
+import { CurrentPageReference } from 'lightning/navigation';
 
 export default class ReturnOrder extends LightningElement {
   statusVal = 'New';
@@ -22,9 +23,16 @@ export default class ReturnOrder extends LightningElement {
       );
       return table.isDataValid();
     } catch (e) {
-      console.log('halohalo');
       console.log(e.message);
       return false;
+    }
+  }
+
+  @wire(CurrentPageReference)
+  getPageReference(currentPageReference) {
+    if (currentPageReference) {
+      let recordId = currentPageReference.state.c__recordId;
+      this.subjectVal = `Return order for ${recordId}`;
     }
   }
 
@@ -105,7 +113,6 @@ export default class ReturnOrder extends LightningElement {
     let tableData = this.refs.table.getSelectedData();
     let junctionObjectData = [];
 
-    //TODO: Review created data
     for (let row of tableData) {
       junctionObjectData.push({
         Case__c: caseId,

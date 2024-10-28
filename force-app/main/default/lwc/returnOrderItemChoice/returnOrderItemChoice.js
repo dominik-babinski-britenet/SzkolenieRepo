@@ -1,7 +1,9 @@
 import { LightningElement, wire, api } from 'lwc';
 import getOrderItemsForOrder from '@salesforce/apex/ReturnOrdersController.getOrderItemsForOrder';
+import { CurrentPageReference } from 'lightning/navigation';
 
 export default class ReturnOrderItemChoice extends LightningElement {
+  recordId;
   draftValues;
   selectedRows;
   gridData;
@@ -27,8 +29,19 @@ export default class ReturnOrderItemChoice extends LightningElement {
     }
   ];
 
-  @wire(getOrderItemsForOrder, { orderId: '801WU00000QrzHkYAJ' })
+  @wire(CurrentPageReference)
+  getPageReference(currentPageReference) {
+    if (currentPageReference) {
+      this.recordId = currentPageReference.state.c__recordId;
+    }
+  }
+
+  @wire(getOrderItemsForOrder, { orderId: '$recordId' })
   wiredOrderItems(result) {
+    if (!this.recordId) {
+      return;
+    }
+
     this.wiredResult = result;
     const { data, error } = result;
 
@@ -58,16 +71,12 @@ export default class ReturnOrderItemChoice extends LightningElement {
       'lightning-datatable'
     ).draftValues;
     let data = this.gridData;
-    console.log(`draftValues: ${JSON.stringify(draftValues)}`);
-    console.log(`data: ${JSON.stringify(data)}`);
 
     for (let selectedRow of this.selectedRows) {
       let draftValueForRow = draftValues.find((row) => row.Id === selectedRow);
-      console.log(`draftValueForRow: ${JSON.stringify(draftValueForRow)}`);
       let returnItemQuantity = draftValueForRow
         ? Number(draftValueForRow.ReturnedQuantity)
         : 0;
-      console.log(`returnItemQuantity: ${JSON.stringify(returnItemQuantity)}`);
       let gridItem = data.find((item) => item.Id === selectedRow);
       let totalQuantityOfItem = gridItem ? Number(gridItem.Quantity) : 0;
 
