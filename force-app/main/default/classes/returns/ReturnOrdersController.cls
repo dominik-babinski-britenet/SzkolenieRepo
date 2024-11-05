@@ -1,7 +1,11 @@
 public with sharing class ReturnOrdersController {
     @AuraEnabled(cacheable=true)
     public static List<OrderItem> getOrderItemsForOrder(Id orderId) {
-        return [SELECT Product2.Name, Product2.External__c, Quantity FROM OrderItem WHERE OrderId = :orderId];
+        return [
+            SELECT Product2.Name, Product2.External__c, Product2.ProductExternalId__c, Quantity
+            FROM OrderItem
+            WHERE OrderId = :orderId
+        ];
     }
 
     @AuraEnabled
@@ -19,6 +23,8 @@ public with sharing class ReturnOrdersController {
 
     @AuraEnabled
     public static List<Return_Item__c> insertJunctionObjects(List<Return_Item__c> itemsToInsert) {
+        System.debug(JSON.serialize(itemsToInsert));
+
         for (Return_Item__c item : itemsToInsert) {
             item.External_Id__c = UUID.randomUUID().toString();
         }
@@ -36,19 +42,26 @@ public with sharing class ReturnOrdersController {
         }
 
         List<Return_Item__c> externalItems = [
-            SELECT Case_External_Id__c, Returned_Quantity__c, Order_Product__r.Product2.ProductExternalId__c
+            SELECT External_Id__c, Case_External_Id__c, Returned_Quantity__c, Order_Product__r.Product2.ProductExternalId__c
             FROM Return_Item__c
             WHERE Id IN :itemIds AND Order_Product__r.Product2.External__c = TRUE
         ];
+
+        for (Return_Item__c item : externalItems) {
+            item.Product_External_Id__c = item.Order_Product__r.Product2.ProductExternalId__c;
+        }
 
         return externalItems;
     }
 
     @AuraEnabled
-    public static string sendExternalItems(List<Return_Item__c> itemsToSend, String caseExternalId) {
+    public static void sendExternalItems(List<Return_Item__c> itemsToSend, String caseExternalId) {
         HttpRequest httpRequest = new HttpRequest();
         httpRequest.setMethod('POST');
         httpRequest.setEndpoint('callout:SynchronizeProducts/services/data/v61.0/sobjects/External_case_items__e');
+
+        System.debug(itemsToSend);
+        System.debug(JSON.serialize(itemsToSend));
 
         External_case_items__e platformEvent = new External_case_items__e(
             Payload__c = JSON.serialize(itemsToSend),
@@ -62,12 +75,9 @@ public with sharing class ReturnOrdersController {
 
         try {
             HttpResponse response = http.send(httpRequest);
+            System.debug(response);
         } catch (Exception e) {
             System.debug(e.getMessage());
-        } finally {
-            return '';
         }
-
-        return '';
     }
 }

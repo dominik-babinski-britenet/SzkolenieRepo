@@ -3,7 +3,7 @@
     <fullName>Status__c</fullName>
     <label>Status</label>
     <required>false</required>
-    <trackHistory>false</trackHistory>
+    <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
@@ -16,14 +16,25 @@
                 <label>Pending</label>
             </value>
             <value>
-                <fullName>Reject</fullName>
+                <fullName>Awaiting Approval</fullName>
                 <default>false</default>
-                <label>Reject</label>
+                <label>Awaiting Approval</label>
+            </value>
+            <value>
+                <fullName>Rejected</fullName>
+                <default>false</default>
+                <label>Rejected</label>
             </value>
             <value>
                 <fullName>Approved</fullName>
                 <default>false</default>
                 <label>Approved</label>
+            </value>
+            <value>
+                <fullName>Reject</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Reject</label>
             </value>
         </valueSetDefinition>
     </valueSet>

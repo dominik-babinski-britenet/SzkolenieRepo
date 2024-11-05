@@ -1,8 +1,8 @@
-public class CaseCreatedEventQueueable implements Queueable {
+public class CaseCreatedEventQueueable implements Queueable, Database.AllowsCallouts {
     String caseId;
 
     public CaseCreatedEventQueueable(String caseId) {
-        caseId = this.caseId;
+        this.caseId = caseId;
     }
 
     public void execute(QueueableContext context) {
@@ -20,6 +20,7 @@ public class CaseCreatedEventQueueable implements Queueable {
         try {
             HttpResponse response = http.send(httpRequest);
         } catch (Exception e) {
+            System.debug(e.getMessage());
         }
     }
 }

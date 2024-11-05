@@ -50,6 +50,7 @@ export default class ReturnOrderItemChoice extends LightningElement {
         return {
           Id: item.Id,
           Name: item.Product2.Name,
+          ProductExternalId: item.Product2.ProductExternalId__c,
           Quantity: item.Quantity,
           ReturnedQuantity: 0,
           External: item.Product2.External__c
@@ -71,6 +72,10 @@ export default class ReturnOrderItemChoice extends LightningElement {
       'lightning-datatable'
     ).draftValues;
     let data = this.gridData;
+
+    if (this.selectedRows.length() <= 0) {
+      return false;
+    }
 
     for (let selectedRow of this.selectedRows) {
       let draftValueForRow = draftValues.find((row) => row.Id === selectedRow);

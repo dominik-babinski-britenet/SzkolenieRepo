@@ -1,4 +1,4 @@
-public class ReturnItemSyncQueueable implements Queueable {
+public class ReturnItemSyncQueueable implements Queueable, Database.AllowsCallouts {
     public Return_Item__c returnItem;
 
     public ReturnItemSyncQueueable(Return_Item__c returnItem) {

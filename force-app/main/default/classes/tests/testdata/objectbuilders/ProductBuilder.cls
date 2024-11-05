@@ -5,4 +5,9 @@ public class ProductBuilder {
         product.Name = name;
         return this;
     }
+
+    public ProductBuilder setExternalId(String externalId) {
+        product.ProductExternalId__c = externalId;
+        return this;
+    }
 }

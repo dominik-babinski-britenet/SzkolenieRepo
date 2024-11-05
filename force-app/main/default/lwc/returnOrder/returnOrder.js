@@ -5,6 +5,7 @@ import createCase from '@salesforce/apex/ReturnOrdersController.createCase';
 import filterExternalProducts from '@salesforce/apex/ReturnOrdersController.filterExternalItems';
 import { subscribe, unsubscribe } from 'lightning/empApi';
 import { CurrentPageReference } from 'lightning/navigation';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class ReturnOrder extends LightningElement {
   statusVal = 'New';
@@ -18,9 +19,6 @@ export default class ReturnOrder extends LightningElement {
   checkIfTableIsValid() {
     try {
       const table = this.refs.table;
-      console.log(
-        `table.isDataValid(): ${JSON.stringify(table.isDataValid())}`
-      );
       return table.isDataValid();
     } catch (e) {
       console.log(e.message);
@@ -36,77 +34,83 @@ export default class ReturnOrder extends LightningElement {
     }
   }
 
-  connectedCallback() {
-    //TODO: Throw it out
-    //this.subscribeToReturnEvent();
-  }
-
-  async handleFormSubmit() {
-    if (!this.isTableValid()) {
-      return;
+  async handleFormSubmit(event) {
+    try {
+      if (!this.checkIfTableIsValid()) {
+        this.showToast(
+          'error',
+          'Invalid data, please ensure you have any products selected and returned quantity is correct for each product.'
+        );
+        return;
+      }
+    } catch (e) {
+      console.log(e.message);
     }
-
     this.isLoading = true;
+
     try {
       const resultMap = await this.createCase();
       const caseId = resultMap.caseId;
       const caseExternalId = resultMap.caseExternalId;
       this.caseExternalId = caseExternalId;
-
       let createdItems = await this.createJunctionItems(caseId, caseExternalId);
-
       let externalItems = await filterExternalProducts({
         initialItems: createdItems
       });
-
-      if (externalItems.size() > 0) {
-        await this.sendExternalItems(caseExternalId);
+      if (externalItems.length > 0) {
+        await this.sendExternalItems(caseExternalId, externalItems);
         this.subscribeToReturnEvent();
       } else {
         this.isLoading = false;
+        this.showToast('success', 'Return request created succesfully.');
       }
     } catch (error) {
-      console.error(error);
+      this.showToast('error', error.message);
     }
   }
 
   subscribeToReturnEvent() {
-    console.log('was executed at all');
     subscribe(
       this.channelName,
       -1,
       this.handleCaseCreatedCallback.bind(this)
     ).then((subscription) => {
       this.subscription = subscription;
-      console.log('subscribed to event');
     });
   }
 
   handleCaseCreatedCallback(response) {
-    console.log(`response: ${JSON.stringify(response)}`);
-    unsubscribe(this.subscription, (msg) => {
-      console.log(`msg: ${JSON.stringify(msg)}`);
-    });
+    const payload = response.data.payload;
+    const caseId = payload.Case_Identificator__c;
+
+    if (this.caseExternalId !== caseId) {
+      return;
+    }
+
+    unsubscribe(this.subscription, (msg) => {});
     this.isLoading = false;
   }
 
-  async sendExternalItems(caseExternalId) {
-    const data = { caseExternalId: caseExternalId };
+  async sendExternalItems(caseExternalId, externalItems) {
+    const data = { caseExternalId: caseExternalId, itemsToSend: externalItems };
     try {
       await sendItemsViaRest(data);
+      this.showToast('success', 'Return request created succesfully.');
     } catch (error) {
       console.error(error);
+      this.showToast('error', error.message);
     }
   }
 
   async createCase() {
     const data = {
-      caseStatus: this.statusVal,
-      caseSubject: this.subjectVal,
-      caseDescription: this.descriptionVal
+      status: this.statusVal,
+      subject: this.subjectVal,
+      description: this.descriptionVal
     };
 
-    await createCase(data);
+    let returnMap = await createCase(data);
+    return returnMap;
   }
 
   async createJunctionItems(caseId, caseExternalId) {
@@ -118,6 +122,7 @@ export default class ReturnOrder extends LightningElement {
         Case__c: caseId,
         Case_External_Id__c: caseExternalId,
         Order_Product__c: row.Id,
+        Product_External_Id__c: row.ProductExternalId,
         Returned_Quantity__c: row.ReturnedQuantity,
         Status__c: 'Pending',
         Strategy__c: 'None',
@@ -129,5 +134,29 @@ export default class ReturnOrder extends LightningElement {
       itemsToInsert: junctionObjectData
     });
     return createdItems;
+  }
+
+  showToast(type, message) {
+    const event = new ShowToastEvent({
+      title: this.getTitle(type),
+      message: message,
+      variant: type,
+      mode: 'dismissable'
+    });
+    this.dispatchEvent(event);
+  }
+
+  getTitle(type) {
+    switch (type) {
+      case 'success':
+        return 'Success';
+      case 'error':
+        return 'Error';
+      case 'warning':
+        return 'Warning';
+      case 'info':
+      default:
+        return 'Information';
+    }
   }
 }
