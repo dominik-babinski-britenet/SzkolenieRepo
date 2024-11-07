@@ -6,8 +6,22 @@ import filterExternalProducts from '@salesforce/apex/ReturnOrdersController.filt
 import { subscribe, unsubscribe } from 'lightning/empApi';
 import { CurrentPageReference } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import RETURN_ORDER_SUBJECT from '@salesforce/label/c.Return_Order_Subject';
+import ERROR_INVALID_PRODUCTS from '@salesforce/label/c.Error_Invalid_Return_Products';
+import RETURN_REQUEST_SUCCESFULL from '@salesforce/label/c.Success_Return_Request';
+import INPUT_STATUS from '@salesforce/label/c.Input_Status';
+import INPUT_SUBJECT from '@salesforce/label/c.Input_Subject';
+import INPUT_DESCRIPTION from '@salesforce/label/c.Input_Description';
+import BUTTON_CREATE from '@salesforce/label/c.Create';
+import BUTTON_CANCEL from '@salesforce/label/c.Cancel';
 
 export default class ReturnOrder extends LightningElement {
+  inputDescription = INPUT_DESCRIPTION;
+  inputSubject = INPUT_SUBJECT;
+  inputStatus = INPUT_STATUS;
+  buttonCreate = BUTTON_CREATE;
+  buttonCancel = BUTTON_CANCEL;
+
   statusVal = 'New';
   subjectVal = 'Temporary subject';
   channelName = '/event/Case_Created__e';
@@ -30,17 +44,14 @@ export default class ReturnOrder extends LightningElement {
   getPageReference(currentPageReference) {
     if (currentPageReference) {
       let recordId = currentPageReference.state.c__recordId;
-      this.subjectVal = `Return order for ${recordId}`;
+      this.subjectVal = RETURN_ORDER_SUBJECT + ` ${recordId}`;
     }
   }
 
   async handleFormSubmit(event) {
     try {
       if (!this.checkIfTableIsValid()) {
-        this.showToast(
-          'error',
-          'Invalid data, please ensure you have any products selected and returned quantity is correct for each product.'
-        );
+        this.showToast('error', ERROR_INVALID_PRODUCTS);
         return;
       }
     } catch (e) {
@@ -62,7 +73,7 @@ export default class ReturnOrder extends LightningElement {
         this.subscribeToReturnEvent();
       } else {
         this.isLoading = false;
-        this.showToast('success', 'Return request created succesfully.');
+        this.showToast('success', RETURN_REQUEST_SUCCESFULL);
       }
     } catch (error) {
       this.showToast('error', error.message);
@@ -95,7 +106,7 @@ export default class ReturnOrder extends LightningElement {
     const data = { caseExternalId: caseExternalId, itemsToSend: externalItems };
     try {
       await sendItemsViaRest(data);
-      this.showToast('success', 'Return request created succesfully.');
+      this.showToast('success', RETURN_REQUEST_SUCCESFULL);
     } catch (error) {
       console.error(error);
       this.showToast('error', error.message);

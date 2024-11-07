@@ -2,7 +2,6 @@ public with sharing class ApproveReturnItemController {
     @AuraEnabled
     public static void CreateApprovalRequest(String comment, String strategy, Id recordId) {
         Return_Item__c item = new Return_Item__c(Id = recordId, Strategy__c = strategy);
-        System.debug(strategy);
         update item;
 
         Id caseOwner = [
@@ -12,12 +11,12 @@ public with sharing class ApproveReturnItemController {
         ][0]
         .OwnerId;
 
-        Approval.ProcessSubmitRequest req1 = new Approval.ProcessSubmitRequest();
-        req1.setComments(comment);
-        req1.setObjectId(recordId);
-        req1.setNextApproverIds(new List<Id>{ caseOwner });
-        req1.setProcessDefinitionNameOrId('Return_Item_Approval');
-        req1.setSkipEntryCriteria(true);
-        Approval.ProcessResult result = Approval.process(req1);
+        Approval.ProcessSubmitRequest request = new Approval.ProcessSubmitRequest();
+        request.setComments(comment);
+        request.setObjectId(recordId);
+        request.setNextApproverIds(new List<Id>{ caseOwner });
+        request.setProcessDefinitionNameOrId('Return_Item_Approval');
+        request.setSkipEntryCriteria(true);
+        Approval.ProcessResult result = Approval.process(request);
     }
 }

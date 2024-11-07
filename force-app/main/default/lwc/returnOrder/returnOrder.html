@@ -12,17 +12,17 @@
       ></lightning-spinner>
 
       <lightning-input-field
-        field-name="Status"
+        field-name={inputStatus}
         value={statusVal}
         disabled
       ></lightning-input-field>
       <lightning-input-field
-        field-name="Subject"
+        field-name={inputSubject}
         value={subjectVal}
         disabled
       ></lightning-input-field>
       <lightning-input-field
-        field-name="Description"
+        field-name={inputDescription}
         value={descriptionVal}
       ></lightning-input-field>
     </lightning-record-edit-form>
@@ -32,12 +32,12 @@
   <div class="slds-modal__footer">
     <lightning-button
       variant="neutral"
-      label="Cancel"
+      label={buttonCancel}
       onclick={handleClose}
     ></lightning-button>
     <lightning-button
       variant="brand"
-      label="Create"
+      label={buttonCreate}
       onclick={handleFormSubmit}
     ></lightning-button>
   </div>

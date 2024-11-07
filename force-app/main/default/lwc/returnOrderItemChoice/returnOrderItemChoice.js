@@ -1,6 +1,10 @@
 import { LightningElement, wire, api } from 'lwc';
 import getOrderItemsForOrder from '@salesforce/apex/ReturnOrdersController.getOrderItemsForOrder';
 import { CurrentPageReference } from 'lightning/navigation';
+import LABEL_PRODUCT_NAME from '@salesforce/label/c.Product_Name';
+import LABEL_QUANTITY from '@salesforce/label/c.Quantity';
+import LABEL_RETURNED_QUANTITY from '@salesforce/label/c.Returned_Quantity';
+import LABEL_EXTERNAL from '@salesforce/label/c.External';
 
 export default class ReturnOrderItemChoice extends LightningElement {
   recordId;
@@ -9,21 +13,21 @@ export default class ReturnOrderItemChoice extends LightningElement {
   gridData;
   gridColumns = [
     {
-      label: 'Product Name',
+      label: LABEL_PRODUCT_NAME,
       fieldName: 'Name'
     },
     {
-      label: 'Quantity',
+      label: LABEL_QUANTITY,
       fieldName: 'Quantity'
     },
     {
-      label: 'Returned Quantity',
+      label: LABEL_RETURNED_QUANTITY,
       fieldName: 'ReturnedQuantity',
       type: 'number',
       editable: true
     },
     {
-      label: 'External',
+      label: LABEL_EXTERNAL,
       fieldName: 'External',
       type: 'boolean'
     }
@@ -56,7 +60,6 @@ export default class ReturnOrderItemChoice extends LightningElement {
           External: item.Product2.External__c
         };
       });
-      console.log(`data: ${JSON.stringify(data)}`);
     } else if (error) {
       console.log(`error: ${JSON.stringify(error)}`);
     }
@@ -73,7 +76,7 @@ export default class ReturnOrderItemChoice extends LightningElement {
     ).draftValues;
     let data = this.gridData;
 
-    if (this.selectedRows.length() <= 0) {
+    if (this.selectedRows.length <= 0) {
       return false;
     }
 

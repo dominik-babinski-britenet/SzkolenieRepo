@@ -23,8 +23,6 @@ public with sharing class ReturnOrdersController {
 
     @AuraEnabled
     public static List<Return_Item__c> insertJunctionObjects(List<Return_Item__c> itemsToInsert) {
-        System.debug(JSON.serialize(itemsToInsert));
-
         for (Return_Item__c item : itemsToInsert) {
             item.External_Id__c = UUID.randomUUID().toString();
         }
@@ -60,9 +58,6 @@ public with sharing class ReturnOrdersController {
         httpRequest.setMethod('POST');
         httpRequest.setEndpoint('callout:SynchronizeProducts/services/data/v61.0/sobjects/External_case_items__e');
 
-        System.debug(itemsToSend);
-        System.debug(JSON.serialize(itemsToSend));
-
         External_case_items__e platformEvent = new External_case_items__e(
             Payload__c = JSON.serialize(itemsToSend),
             Case_Identificator__c = caseExternalId
@@ -75,7 +70,6 @@ public with sharing class ReturnOrdersController {
 
         try {
             HttpResponse response = http.send(httpRequest);
-            System.debug(response);
         } catch (Exception e) {
             System.debug(e.getMessage());
         }
