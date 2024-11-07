@@ -1,0 +1,209 @@
+<aura:component
+  implements="force:lightningQuickAction,force:hasRecordId"
+  controller="CreateOrderController"
+>
+  <aura:attribute name="discount" type="Double" default="0." />
+  <aura:attribute name="isDataLoading" type="Boolean" default="False" />
+  <aura:attribute name="data" type="Object" />
+  <aura:attribute name="columns" type="List" />
+  <aura:attribute name="recordId" type="String" />
+  <aura:attribute name="allData" type="List" />
+  <aura:attribute name="currentPageNumber" type="Integer" default="1" />
+  <aura:attribute name="pageSize" type="Integer" default="10" />
+  <aura:attribute name="totalPages" type="Integer" default="0" />
+  <aura:attribute name="pageList" type="List" />
+  <aura:attribute name="filter" type="String" />
+  <aura:attribute name="selection" type="List" />
+  <aura:attribute name="filteredData" type="List" />
+  <aura:attribute name="selectionPage" type="Boolean" default="True" />
+  <aura:attribute name="draftValues" type="Object" default="[]" />
+  <aura:attribute name="errors" type="Object" default="[]" />
+  <aura:attribute name="totalPrice" type="String" />
+
+  <aura:handler name="init" value="{! this }" action="{! c.init }" />
+
+  <aura:if isTrue="{!v.selectionPage}">
+    <div style="margin-bottom: 15px">
+      <lightning:input
+        name="filter"
+        label="{!$Label.c.Filter_Products}"
+        onchange="{! c.filter }"
+        placeholder="{!$Label.c.Filter_Keywords}"
+        value="{! v.filter}"
+      />
+    </div>
+
+    <lightning:card>
+      <lightning:layout multipleRows="true" horizontalAlign="center">
+        <lightning:layoutItem padding="around-small" size="12">
+          <aura:if isTrue="{!not(v.isDataLoading)}">
+            <lightning:datatable
+              class="fixedHeightTable"
+              columns="{! v.columns }"
+              data="{! v.data }"
+              keyField="Id"
+              hideCheckboxColumn="false"
+              selectedRows="{!v.selection}"
+              onrowselection="{! c.handleRowSelection }"
+            />
+            <aura:set attribute="else">
+              <lightning:spinner
+                alternativeText="Loading"
+                size="large"
+                variant="brand"
+              />
+            </aura:set>
+          </aura:if>
+        </lightning:layoutItem>
+        <lightning:layoutItem>
+          <lightning:layoutItem
+            padding="around-small"
+            flexibility="auto"
+          ></lightning:layoutItem>
+          <lightning:button
+            label="{!$Label.c.First}"
+            iconName="utility:left"
+            iconPosition="left"
+            onclick="{!c.onFirst}"
+            disabled="{! v.currentPageNumber == 1}"
+          />
+          <lightning:button
+            iconName="utility:chevronleft"
+            iconPosition="left"
+            onclick="{!c.onPrev}"
+            disabled="{! v.currentPageNumber == 1}"
+          />
+          <span class="slds-p-horizontal_x-small">
+            <a
+              onclick="{!c.processMe}"
+              name="1"
+              class="{! (v.currentPageNumber == 1) ? 'selected' : ''}"
+              >1</a
+            >
+          </span>
+          <span class="slds-p-horizontal_xxx-small">
+            <a>...</a>
+          </span>
+
+          <aura:iteration items="{!v.pageList}" var="item">
+            <span class="slds-p-horizontal_x-small">
+              <a
+                onclick="{!c.processMe}"
+                name="{!item}"
+                class="{! (v.currentPageNumber == item) ? 'selected' : ''}"
+                >{!item}</a
+              >
+            </span>
+          </aura:iteration>
+
+          <span class="slds-p-horizontal_xxx-small">
+            <a>...</a>
+          </span>
+          <span class="slds-p-horizontal_x-small">
+            <a
+              onclick="{!c.processMe}"
+              name="{!v.totalPages}"
+              class="{! (v.currentPageNumber == v.totalPages) ? 'selected' : ''}"
+              >{!v.totalPages}</a
+            >
+          </span>
+          <lightning:button
+            iconName="utility:chevronright"
+            iconPosition="right"
+            disabled="{! v.currentPageNumber == v.totalPages}"
+            onclick="{!c.onNext}"
+          />
+          <lightning:button
+            label="{!$Label.c.Last}"
+            iconName="utility:right"
+            iconPosition="right"
+            disabled="{! v.currentPageNumber == v.totalPages}"
+            onclick="{!c.onLast}"
+          />
+        </lightning:layoutItem>
+      </lightning:layout>
+    </lightning:card>
+
+    <footer class="slds-modal__footer">
+      <lightning:button
+        variant="brand"
+        label="{!$Label.c.Next}"
+        onclick="{!c.displaySummary}"
+      />
+    </footer>
+    <aura:set attribute="else">
+      <lightning:card>
+        <div>
+          <h1 class="slds-text-heading_medium">{!$Label.c.Summary}</h1>
+        </div>
+
+        <lightning:layout multipleRows="true" horizontalAlign="center">
+          <lightning:layoutItem padding="around-small" size="12">
+            <aura:if isTrue="{!v.isDataLoading}">
+              <lightning:spinner
+                alternativeText="Loading"
+                size="large"
+                variant="brand"
+              />
+            </aura:if>
+            <aura:if isTrue="{!not(v.isDataLoading)}">
+              <lightning:datatable
+                class="fixedHeightTable"
+                columns="{! v.columns }"
+                draftValues="{! v.draftValues }"
+                data="{! v.data }"
+                keyField="Id"
+                hideCheckboxColumn="true"
+                oncellchange="{! c.handleSaveEdition}"
+                onsave="{! c.handleSaveEdition }"
+                errors="{! v.errors }"
+                suppressBottomBar="true"
+              />
+            </aura:if>
+          </lightning:layoutItem>
+          <lightning:layoutItem
+            padding="around-small"
+            flexibility="auto"
+          ></lightning:layoutItem>
+        </lightning:layout>
+      </lightning:card>
+
+      <aura:if isTrue="{!not(v.isDataLoading)}">
+        <footer class="slds-modal__footer slds-grid slds-grid_align-spread">
+          <div class="slds-text-body_regular">
+            <div
+              style="
+                min-width: 150px;
+                display: flex;
+                justify-content: space-between;
+              "
+            >
+              {!$Label.c.Total}: {!v.totalPrice}
+            </div>
+            <div
+              style="
+                min-width: 150px;
+                display: flex;
+                justify-content: space-between;
+              "
+            >
+              {!$Label.c.Discount}: {!v.discount}%
+            </div>
+          </div>
+          <div>
+            <lightning:button
+              variant="neutral"
+              label="{!$Label.c.Back}"
+              onclick="{!c.returnToSelection}"
+            />
+            <lightning:button
+              variant="brand"
+              label="{!$Label.c.Complete}"
+              onclick="{!c.completeOrder}"
+            />
+          </div>
+        </footer>
+      </aura:if>
+    </aura:set>
+  </aura:if>
+</aura:component>

@@ -1,0 +1,10 @@
+<aura:documentation>
+  <aura:description>Documentation for the ExampleComponent</aura:description>
+  <aura:example
+    name="ExampleName"
+    ref="exampleComponentName"
+    label="Example Label"
+  >
+    This example demonstrates how to use the ExampleComponent.
+  </aura:example>
+</aura:documentation>

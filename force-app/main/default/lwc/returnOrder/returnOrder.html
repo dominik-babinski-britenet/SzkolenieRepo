@@ -1,0 +1,44 @@
+<template>
+  <div class="slds-modal__body slds-p-around_medium slds-theme_default">
+    <lightning-record-edit-form
+      object-api-name="Case"
+      onsuccess={handleSuccess}
+      onerror={handleError}
+    >
+      <lightning-spinner
+        alternative-text="Loading"
+        size="medium"
+        lwc:if={isLoading}
+      ></lightning-spinner>
+
+      <lightning-input-field
+        field-name={inputStatus}
+        value={statusVal}
+        disabled
+      ></lightning-input-field>
+      <lightning-input-field
+        field-name={inputSubject}
+        value={subjectVal}
+        disabled
+      ></lightning-input-field>
+      <lightning-input-field
+        field-name={inputDescription}
+        value={descriptionVal}
+      ></lightning-input-field>
+    </lightning-record-edit-form>
+  </div>
+
+  <c-return-order-item-choice lwc:ref="table"> </c-return-order-item-choice>
+  <div class="slds-modal__footer">
+    <lightning-button
+      variant="neutral"
+      label={buttonCancel}
+      onclick={handleClose}
+    ></lightning-button>
+    <lightning-button
+      variant="brand"
+      label={buttonCreate}
+      onclick={handleFormSubmit}
+    ></lightning-button>
+  </div>
+</template>

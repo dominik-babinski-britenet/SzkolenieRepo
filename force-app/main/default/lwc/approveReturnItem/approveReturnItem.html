@@ -1,0 +1,22 @@
+<template>
+  <lightning-quick-action-panel header={titleCreateApproval}>
+    <lightning-modal-body>
+      <lightning-textarea
+        label={inputComment}
+        value={comment}
+      ></lightning-textarea>
+      <lightning-record-edit-form object-api-name="Return_Item__c">
+        <lightning-input-field field-name="Strategy__c" data-id="strategyField">
+        </lightning-input-field>
+      </lightning-record-edit-form>
+    </lightning-modal-body>
+
+    <lightning-modal-footer>
+      <lightning-button
+        variant="brand"
+        label={buttonSendApproval}
+        onclick={handleSave}
+      ></lightning-button>
+    </lightning-modal-footer>
+  </lightning-quick-action-panel>
+</template>
